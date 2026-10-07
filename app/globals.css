@@ -1,0 +1,392 @@
+@import "tailwindcss";
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   INSPER AI · TOKENS OFICIAIS (Playbook de Marca v1.0, §02 e §11)
+   Espelho de SITE NOVO/frontend/app/globals.css. Se a paleta mudar, mude lá
+   primeiro e copie para cá.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+:root {
+  /* tinta e fundo */
+  --ia-petroleo: #011e42;
+  --ia-noite: #04070e;
+  --ia-papel: #ffffff;
+  --ia-nevoa: #f1f4f8;
+  --ia-canvas: #e4eaf0;
+  /* azuis — a luz */
+  --ia-cobalto: #0a6cf1;
+  --ia-azul: #2e85ff;
+  --ia-ceu: #7fc4ff;
+  --ia-ceu-claro: #a8dcff;
+  /* escala de texto */
+  --ia-corpo: #3a4654;
+  --ia-apoio: #5a6472;
+  --ia-meta: #78889b;
+  --ia-meta-texto: #5f6f82;
+  --ia-regua: #dce3eb;
+  /* marca */
+  --ia-marca-a: #2074de;
+  --ia-marca-b: #9ac8f4;
+  --degrade-marca: linear-gradient(90deg, var(--ia-marca-a), var(--ia-azul) 45%, var(--ia-ceu) 75%, var(--ia-marca-b));
+
+  /* movimento */
+  --ease-ia: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --ease-mk: cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* papéis de cor (trocam dentro de `.tom-escuro`, reservado para o futuro) */
+  --tinta: var(--ia-petroleo);
+  --texto: var(--ia-corpo);
+  --apoio: var(--ia-apoio);
+  --meta: var(--ia-meta-texto);
+  --regua: var(--ia-regua);
+  --enfase: var(--ia-cobalto);
+  --fundo: var(--ia-papel);
+  --foco: var(--ia-cobalto);
+
+  /* ── Categorias da agenda. Única fonte da cor: lib/categorias.ts aponta para cá. ── */
+  --cat-evento: #0a6cf1;   /* Cobalto — público, voltado à marca */
+  --cat-aula: #0b7a5e;     /* Jade — mesma saturação dos azuis */
+  --cat-reuniao: #011e42;  /* Petróleo — interno e frequente, tinta quieta */
+  --cat-prazo: #b45309;    /* Âmbar — quente = atenção */
+
+  /* estados */
+  --perigo: #b42318;
+  --perigo-fundo: #fef3f2;
+}
+
+@theme inline {
+  --color-ia-petroleo: var(--ia-petroleo);
+  --color-ia-noite: var(--ia-noite);
+  --color-ia-papel: var(--ia-papel);
+  --color-ia-nevoa: var(--ia-nevoa);
+  --color-ia-canvas: var(--ia-canvas);
+  --color-ia-cobalto: var(--ia-cobalto);
+  --color-ia-azul: var(--ia-azul);
+  --color-ia-ceu: var(--ia-ceu);
+  --color-ia-ceu-claro: var(--ia-ceu-claro);
+  --color-ia-corpo: var(--ia-corpo);
+  --color-ia-apoio: var(--ia-apoio);
+  --color-ia-meta: var(--ia-meta);
+  --color-ia-regua: var(--ia-regua);
+
+  --color-tinta: var(--tinta);
+  --color-texto: var(--texto);
+  --color-apoio: var(--apoio);
+  --color-meta: var(--meta);
+  --color-regua: var(--regua);
+  --color-enfase: var(--enfase);
+  --color-fundo: var(--fundo);
+
+  --color-cat-evento: var(--cat-evento);
+  --color-cat-aula: var(--cat-aula);
+  --color-cat-reuniao: var(--cat-reuniao);
+  --color-cat-prazo: var(--cat-prazo);
+  --color-perigo: var(--perigo);
+  --color-perigo-fundo: var(--perigo-fundo);
+
+  --font-display: var(--font-space-grotesk), "Space Grotesk", sans-serif;
+  --font-sans: var(--font-instrument-sans), "Instrument Sans", sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+  --ease-ia: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --ease-mk: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ═══ Base ═══════════════════════════════════════════════════════════════ */
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+body {
+  background: var(--ia-papel);
+  color: var(--ia-corpo);
+  font-family: var(--font-sans);
+  font-weight: 400;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+::selection {
+  background: rgba(10, 108, 241, 0.16);
+  color: var(--ia-petroleo);
+}
+:focus-visible {
+  outline: 2px solid var(--foco);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+a,
+button,
+input,
+textarea,
+select,
+[tabindex] {
+  outline-color: var(--foco);
+}
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ═══ Grade ═══════════════════════════════════════════════════════════════ */
+@layer components {
+  .wrap {
+    --gutter: 1rem;
+    width: 100%;
+    max-width: calc(90rem + 2 * var(--gutter));
+    margin-inline: auto;
+    padding-inline: var(--gutter);
+  }
+  @media (min-width: 1024px) {
+    .wrap {
+      --gutter: 2rem;
+    }
+  }
+  .wrap-estreito {
+    width: 100%;
+    max-width: 44rem;
+    margin-inline: auto;
+  }
+}
+
+/* ═══ Tipografia (§03): Space Grotesk 600 · Instrument Sans 400 ═══════════ */
+@layer components {
+  .t-display,
+  .t-h1,
+  .t-h2,
+  .t-h3,
+  .t-h4 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    color: var(--tinta);
+    text-wrap: balance;
+  }
+  .t-display {
+    font-size: clamp(2.5rem, 1.7rem + 2.4vw, 3.5rem);
+    line-height: 1.06;
+    letter-spacing: -0.035em;
+  }
+  .t-h1 {
+    font-size: clamp(2rem, 1.5rem + 1.7vw, 2.75rem);
+    line-height: 1.06;
+    letter-spacing: -0.035em;
+  }
+  .t-h2 {
+    font-size: clamp(1.5rem, 1.2rem + 1vw, 2rem);
+    line-height: 1.1;
+    letter-spacing: -0.03em;
+  }
+  .t-h3 {
+    font-size: 1.375rem;
+    line-height: 1.2;
+    letter-spacing: -0.025em;
+  }
+  .t-h4 {
+    font-size: 1.125rem;
+    line-height: 1.3;
+    letter-spacing: -0.02em;
+  }
+  .t-lead {
+    font-size: 1.125rem;
+    line-height: 1.6;
+    color: var(--texto);
+    text-wrap: pretty;
+  }
+  .t-corpo {
+    font-size: 1rem;
+    line-height: 1.6;
+    color: var(--texto);
+    text-wrap: pretty;
+  }
+  .t-apoio {
+    font-size: 0.9375rem;
+    line-height: 1.55;
+    color: var(--apoio);
+    text-wrap: pretty;
+  }
+  .t-meta {
+    font-family: var(--font-sans);
+    font-weight: 400;
+    font-size: 0.75rem;
+    line-height: 1.4;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--meta);
+    font-variant-numeric: tabular-nums;
+  }
+  .regua {
+    height: 1px;
+    background: var(--regua);
+    border: 0;
+  }
+}
+
+/* ═══ Barra: branco a 72% com desfoque de 12 px ═══════════════════════════ */
+.barra {
+  background-color: rgba(255, 255, 255, 0.72);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--ia-regua);
+}
+
+/* ═══ Campos de formulário ════════════════════════════════════════════════ */
+@layer components {
+  .campo {
+    width: 100%;
+    min-height: 2.5rem;
+    border: 1px solid var(--regua);
+    border-radius: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    font: inherit;
+    font-size: 0.9375rem;
+    line-height: 1.4;
+    color: var(--tinta);
+    background: var(--ia-papel);
+    transition:
+      border-color 150ms var(--ease-ia),
+      box-shadow 150ms var(--ease-ia);
+  }
+  .campo::placeholder {
+    color: var(--ia-meta);
+  }
+  .campo:hover {
+    border-color: #c5cfdb;
+  }
+  .campo:focus {
+    outline: none;
+    border-color: var(--enfase);
+    box-shadow: 0 0 0 3px rgba(10, 108, 241, 0.15);
+  }
+  .campo:disabled {
+    background: var(--ia-nevoa);
+    color: var(--apoio);
+  }
+  textarea.campo {
+    resize: vertical;
+    min-height: 5.5rem;
+  }
+  select.campo {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2216%22 height=%2216%22 viewBox=%220 0 16 16%22 fill=%22none%22 stroke=%22%235a6472%22 stroke-width=%221.5%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Cpath d=%22M4 6l4 4 4-4%22/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.65rem center;
+    padding-right: 2.25rem;
+  }
+}
+
+/* ═══ Chip de evento: filete de 3 px na cor da categoria + tinta a 10 % ═══ */
+@layer components {
+  .chip {
+    --cor: var(--ia-cobalto);
+    border-left: 3px solid var(--cor);
+    background: color-mix(in srgb, var(--cor) 10%, white);
+    color: var(--tinta);
+    transition: background-color 150ms var(--ease-ia);
+  }
+  .chip:hover,
+  .chip:focus-visible {
+    background: color-mix(in srgb, var(--cor) 20%, white);
+  }
+  .ponto-cat {
+    display: inline-block;
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 9999px;
+    background: var(--cor, var(--ia-cobalto));
+    flex-shrink: 0;
+  }
+}
+
+/* ═══ Diálogos nativos: centro e folha lateral ════════════════════════════ */
+dialog.dialogo {
+  margin: auto;
+  padding: 0;
+  border: 1px solid var(--regua);
+  border-radius: 1rem;
+  background: var(--ia-papel);
+  color: var(--texto);
+  width: min(32rem, calc(100vw - 2rem));
+  max-width: none;
+  max-height: calc(100svh - 2rem);
+  box-shadow: 0 24px 64px rgba(1, 30, 66, 0.18);
+  overflow: hidden;
+}
+dialog.dialogo::backdrop {
+  background: rgba(1, 30, 66, 0.28);
+}
+dialog.dialogo[open] {
+  animation: dialogo-entra 220ms var(--ease-mk);
+}
+dialog.dialogo.folha {
+  margin: 0 0 0 auto;
+  height: 100svh;
+  max-height: 100svh;
+  width: min(27rem, 100vw);
+  border-radius: 0;
+  border: 0;
+  border-left: 1px solid var(--regua);
+  box-shadow: -16px 0 48px rgba(1, 30, 66, 0.12);
+}
+dialog.dialogo.folha[open] {
+  animation: folha-entra 260ms var(--ease-mk);
+}
+@media (max-width: 767px) {
+  dialog.dialogo.folha {
+    margin: auto 0 0 0;
+    width: 100vw;
+    height: auto;
+    max-height: 92svh;
+    border-radius: 1rem 1rem 0 0;
+    border-left: 0;
+    border-top: 1px solid var(--regua);
+  }
+  dialog.dialogo.folha[open] {
+    animation: folha-sobe 260ms var(--ease-mk);
+  }
+}
+@keyframes dialogo-entra {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+}
+@keyframes folha-entra {
+  from {
+    opacity: 0;
+    transform: translateX(24px);
+  }
+}
+@keyframes folha-sobe {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+}
+
+/* ═══ Agenda ══════════════════════════════════════════════════════════════ */
+.linha-agora {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--ia-cobalto);
+  pointer-events: none;
+}
+.linha-agora::before {
+  content: "";
+  position: absolute;
+  left: -4px;
+  top: -3px;
+  width: 8px;
+  height: 8px;
+  border-radius: 9999px;
+  background: var(--ia-cobalto);
+}
