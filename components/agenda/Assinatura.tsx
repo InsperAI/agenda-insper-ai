@@ -61,7 +61,7 @@ export default function Assinatura({ token: tokenInicial }: { token: string | nu
             {copiado ? "Copiado" : "Copiar"}
           </Botao>
         </div>
-        <p className="mt-2 text-[0.8125rem] text-ia-meta">Quem tem este link lê a agenda inteira. Não compartilhe fora da diretoria.</p>
+        <p className="mt-2 text-[0.8125rem] text-ia-meta">Quem tem este link vê os mesmos eventos que você. Não compartilhe.</p>
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2">

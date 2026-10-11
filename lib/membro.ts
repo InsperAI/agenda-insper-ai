@@ -2,7 +2,7 @@ import { cache } from "react";
 import { supabaseServidor } from "./supabase/server";
 import type { MembroRow } from "./supabase/tipos";
 
-export type MembroAtual = Pick<MembroRow, "id" | "email" | "name" | "cargo" | "is_admin">;
+export type MembroAtual = Pick<MembroRow, "id" | "email" | "name" | "cargo" | "nivel" | "is_admin">;
 
 /**
  * Usuário autenticado + linha correspondente em `members`. `cache()` garante
@@ -18,7 +18,7 @@ export const obterMembroAtual = cache(async (): Promise<{ user: { id: string; em
 
   const { data: membro } = await supabase
     .from("members")
-    .select("id,email,name,cargo,is_admin")
+    .select("id,email,name,cargo,nivel,is_admin")
     .eq("email", user.email)
     .maybeSingle();
 

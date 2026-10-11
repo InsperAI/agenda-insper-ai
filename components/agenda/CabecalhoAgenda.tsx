@@ -32,7 +32,8 @@ export default function CabecalhoAgenda({
   aoProximo: () => void;
   aoHoje: () => void;
   aoBuscar: (q: string) => void;
-  aoNovo: () => void;
+  /** Ausente = sem permissão para criar (membro/trainee). */
+  aoNovo?: () => void;
 }) {
   return (
     <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
@@ -67,10 +68,12 @@ export default function CabecalhoAgenda({
           />
         </label>
         <Segmentado opcoes={VISTAS} valor={vista} aoMudar={aoMudarVista} rotulo="Vista da agenda" />
-        <Botao variante="primario" onClick={aoNovo} title="Novo evento (N)" aria-label="Novo evento" className="ml-auto sm:ml-0">
-          <IcoMais />
-          <span className="hidden sm:inline">Novo evento</span>
-        </Botao>
+        {aoNovo && (
+          <Botao variante="primario" onClick={aoNovo} title="Novo evento (N)" aria-label="Novo evento" className="ml-auto sm:ml-0">
+            <IcoMais />
+            <span className="hidden sm:inline">Novo evento</span>
+          </Botao>
+        )}
       </div>
     </div>
   );

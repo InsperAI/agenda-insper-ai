@@ -65,7 +65,8 @@ export default function VistaSemana({
   ocorrencias: Ocorrencia[];
   hoje: string;
   aoSelecionar: (o: Ocorrencia) => void;
-  aoCriarEm: (inicio: TZDate) => void;
+  /** Ausente = sem permissão para criar. */
+  aoCriarEm?: (inicio: TZDate) => void;
 }) {
   const dias = useMemo(() => {
     const ini = inicioDaSemana(ancora);
@@ -97,7 +98,7 @@ export default function VistaSemana({
   const topoAgora = agora ? ((sp(agora).getHours() * 60 + sp(agora).getMinutes() - HORA_INI * 60) / 60) * ALTURA_HORA : -1;
 
   function clicarColuna(e: React.MouseEvent<HTMLDivElement>, dia: TZDate) {
-    if (e.target !== e.currentTarget) return;
+    if (!aoCriarEm || e.target !== e.currentTarget) return;
     const y = e.clientY - e.currentTarget.getBoundingClientRect().top;
     const meiasHoras = Math.max(0, Math.min(HORAS.length * 2 - 1, Math.floor(y / (ALTURA_HORA / 2))));
     aoCriarEm(addMinutes(dia, HORA_INI * 60 + meiasHoras * 30));
@@ -158,7 +159,7 @@ export default function VistaSemana({
               <div
                 key={k}
                 onClick={(e) => clicarColuna(e, dia)}
-                className="relative cursor-pointer border-l border-ia-regua"
+                className={`relative border-l border-ia-regua ${aoCriarEm ? "cursor-pointer" : ""}`}
                 style={{
                   backgroundImage: "linear-gradient(to bottom, var(--ia-regua) 1px, transparent 1px)",
                   backgroundSize: `100% ${ALTURA_HORA}px`,

@@ -70,6 +70,7 @@ function valoresIniciais(f: Formulario): { modo: ModoFormulario; inicial: Valore
       description: e.description,
       freq: modo === "editar-serie" ? e.freq : null,
       until: modo === "editar-serie" ? e.until : null,
+      visibilidade: e.visibilidade,
     },
   };
 }
@@ -78,7 +79,8 @@ function mensagemErro(e: unknown): string {
   return e instanceof Error ? e.message : "Algo deu errado. Tente de novo.";
 }
 
-export default function Agenda({ vistaInicial, ancoraInicial }: { vistaInicial: Vista; ancoraInicial: string }) {
+/** `podeEditar` (só diretoria) liga criar/editar/excluir; a RLS garante o mesmo no banco. */
+export default function Agenda({ vistaInicial, ancoraInicial, podeEditar }: { vistaInicial: Vista; ancoraInicial: string; podeEditar: boolean }) {
   const [vista, setVista] = useState<Vista>(vistaInicial);
   const [ancora, setAncora] = useState(ancoraInicial);
   const [hoje] = useState(() => chaveDia(new Date()));
@@ -186,11 +188,11 @@ export default function Agenda({ vistaInicial, ancoraInicial }: { vistaInicial: 
       if (e.key === "ArrowLeft") navegar(-1);
       else if (e.key === "ArrowRight") navegar(1);
       else if (e.key === "t" || e.key === "T") irHoje();
-      else if (e.key === "n" || e.key === "N") abrirCriar();
+      else if (podeEditar && (e.key === "n" || e.key === "N")) abrirCriar();
     };
     window.addEventListener("keydown", h);
     return () => window.removeEventListener("keydown", h);
-  }, [navegar, irHoje, abrirCriar]);
+  }, [navegar, irHoje, abrirCriar, podeEditar]);
 
   const titulo = vista === "mes" ? tituloMes(dataAncora) : vista === "semana" ? tituloSemana(inicioDaSemana(dataAncora)) : "Próximos 60 dias";
 
@@ -284,11 +286,11 @@ export default function Agenda({ vistaInicial, ancoraInicial }: { vistaInicial: 
         aoProximo={() => navegar(1)}
         aoHoje={irHoje}
         aoBuscar={setBusca}
-        aoNovo={() => abrirCriar()}
+        aoNovo={podeEditar ? () => abrirCriar() : undefined}
       />
       <div className="flex flex-wrap items-center justify-between gap-2">
         <FiltroCategorias ativas={filtros} aoAlternar={alternarFiltro} />
-        <p className="hidden text-[0.75rem] text-ia-meta lg:block">← → navegam · T hoje · N novo</p>
+        <p className="hidden text-[0.75rem] text-ia-meta lg:block">← → navegam · T hoje{podeEditar && " · N novo"}</p>
       </div>
 
       {erro && (
@@ -297,11 +299,11 @@ export default function Agenda({ vistaInicial, ancoraInicial }: { vistaInicial: 
         </p>
       )}
 
-      {vista === "mes" && <VistaMes ancora={dataAncora} ocorrencias={ocorrencias} hoje={hoje} aoSelecionar={setSelecionada} aoCriarEm={(dia) => abrirCriar(setHours(dia, 9))} />}
-      {vista === "semana" && <VistaSemana ancora={dataAncora} ocorrencias={ocorrencias} hoje={hoje} aoSelecionar={setSelecionada} aoCriarEm={(inicio) => abrirCriar(inicio)} />}
+      {vista === "mes" && <VistaMes ancora={dataAncora} ocorrencias={ocorrencias} hoje={hoje} aoSelecionar={setSelecionada} aoCriarEm={podeEditar ? (dia) => abrirCriar(setHours(dia, 9)) : undefined} />}
+      {vista === "semana" && <VistaSemana ancora={dataAncora} ocorrencias={ocorrencias} hoje={hoje} aoSelecionar={setSelecionada} aoCriarEm={podeEditar ? (inicio) => abrirCriar(inicio) : undefined} />}
       {vista === "proximos" && <VistaProximos ocorrencias={ocorrencias} carregando={carregando} aoSelecionar={setSelecionada} />}
 
-      <PainelEvento occ={selecionada} membros={membros} aoFechar={() => setSelecionada(null)} aoEditar={pedirEditar} aoExcluir={pedirExcluir} />
+      <PainelEvento occ={selecionada} membros={membros} aoFechar={() => setSelecionada(null)} aoEditar={podeEditar ? pedirEditar : undefined} aoExcluir={podeEditar ? pedirExcluir : undefined} />
 
       {form && (
         <FormularioEvento

@@ -3,11 +3,12 @@
 import type { CSSProperties, ReactNode } from "react";
 import Botao from "@/components/ui/Botao";
 import Dialogo from "@/components/ui/Dialogo";
-import { IcoBaixar, IcoCalendario, IcoLapis, IcoLink, IcoLixeira, IcoLocal, IcoRepetir } from "@/components/ui/Icones";
+import { IcoBaixar, IcoCalendario, IcoLapis, IcoLink, IcoLixeira, IcoLocal, IcoPessoa, IcoRepetir } from "@/components/ui/Icones";
 import { CATEGORIA, FREQUENCIA } from "@/lib/categorias";
 import { dataComAno, dataHoraCurta, linhaQuando } from "@/lib/datas";
 import { deChaveDia } from "@/lib/fuso";
 import { serializarOcorrencia } from "@/lib/ics";
+import { FRASE_VISIBILIDADE } from "@/lib/niveis";
 import { ehDeSerie, type Ocorrencia } from "@/lib/recorrencia";
 import type { MembroRow } from "@/lib/supabase/tipos";
 
@@ -48,8 +49,9 @@ export default function PainelEvento({
   occ: Ocorrencia | null;
   membros: Map<string, MembroRow>;
   aoFechar: () => void;
-  aoEditar: (o: Ocorrencia) => void;
-  aoExcluir: (o: Ocorrencia) => void;
+  /** Ausentes = só leitura (membro/trainee). */
+  aoEditar?: (o: Ocorrencia) => void;
+  aoExcluir?: (o: Ocorrencia) => void;
 }) {
   const cat = occ ? CATEGORIA[occ.evento.category] : null;
   const nome = (id: string | null) => (id && membros.get(id)?.name) || "alguém";
@@ -82,12 +84,16 @@ export default function PainelEvento({
             <Botao variante="fantasma" tamanho="sm" onClick={() => baixarIcs(occ)} className="mr-auto">
               <IcoBaixar /> .ics
             </Botao>
-            <Botao variante="perigo" tamanho="sm" onClick={() => aoExcluir(occ)}>
-              <IcoLixeira /> Excluir
-            </Botao>
-            <Botao variante="primario" tamanho="sm" onClick={() => aoEditar(occ)}>
-              <IcoLapis /> Editar
-            </Botao>
+            {aoExcluir && (
+              <Botao variante="perigo" tamanho="sm" onClick={() => aoExcluir(occ)}>
+                <IcoLixeira /> Excluir
+              </Botao>
+            )}
+            {aoEditar && (
+              <Botao variante="primario" tamanho="sm" onClick={() => aoEditar(occ)}>
+                <IcoLapis /> Editar
+              </Botao>
+            )}
           </>
         )
       }
@@ -99,6 +105,7 @@ export default function PainelEvento({
             <Linha icone={<IcoCalendario />}>{linhaQuando(occ.inicio, occ.fim, occ.evento.all_day)}</Linha>
             {ehDeSerie(occ) && <Linha icone={<IcoRepetir />}>{descricaoSerie(occ)}</Linha>}
             {occ.evento.location && <Linha icone={<IcoLocal />}>{occ.evento.location}</Linha>}
+            <Linha icone={<IcoPessoa />}>Visível para {FRASE_VISIBILIDADE[occ.evento.visibilidade]}</Linha>
             {occ.evento.link && (
               <Linha icone={<IcoLink />}>
                 <a href={occ.evento.link} target="_blank" rel="noreferrer" className="break-all text-ia-cobalto underline decoration-1 underline-offset-4 hover:text-ia-petroleo">

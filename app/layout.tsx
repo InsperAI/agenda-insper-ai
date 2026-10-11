@@ -24,10 +24,10 @@ const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: "Agenda da Diretoria · Insper AI",
+    default: "Agenda · Insper AI",
     template: "%s · Agenda Insper AI",
   },
-  description: "Calendário compartilhado da diretoria da Insper AI: eventos, aulas, reuniões e prazos.",
+  description: "Calendário compartilhado da Insper AI: eventos, aulas, reuniões e prazos.",
   robots: { index: false, follow: false },
 };
 

@@ -37,7 +37,8 @@ export default function VistaMes({
   ocorrencias: Ocorrencia[];
   hoje: string;
   aoSelecionar: (o: Ocorrencia) => void;
-  aoCriarEm: (dia: TZDate) => void;
+  /** Ausente = sem permissão para criar. */
+  aoCriarEm?: (dia: TZDate) => void;
 }) {
   const grade = useMemo(() => gradeDoMes(ancora), [ancora]);
   const mes = ancora.getMonth();
@@ -61,7 +62,7 @@ export default function VistaMes({
 
   function clicarCelula(e: React.MouseEvent<HTMLDivElement>, dia: TZDate) {
     if (e.target !== e.currentTarget) return;
-    if (window.matchMedia("(min-width: 768px)").matches) aoCriarEm(dia);
+    if (window.matchMedia("(min-width: 768px)").matches) aoCriarEm?.(dia);
     else setDiaTocado(chaveDia(dia));
   }
 
@@ -134,9 +135,11 @@ export default function VistaMes({
       <div className="border-t border-ia-regua p-3 md:hidden">
         <div className="mb-2 flex items-center justify-between">
           <p className="t-meta">{rotuloDia(deChaveDia(diaSelecionado))}</p>
-          <Botao tamanho="sm" variante="fantasma" onClick={() => aoCriarEm(deChaveDia(diaSelecionado))}>
-            <IcoMais /> Novo
-          </Botao>
+          {aoCriarEm && (
+            <Botao tamanho="sm" variante="fantasma" onClick={() => aoCriarEm(deChaveDia(diaSelecionado))}>
+              <IcoMais /> Novo
+            </Botao>
+          )}
         </div>
         {(porDia.get(diaSelecionado) ?? []).length === 0 ? (
           <p className="t-apoio py-2">Nada neste dia.</p>

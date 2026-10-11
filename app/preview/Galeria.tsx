@@ -18,8 +18,8 @@ import { expandir, type Ocorrencia } from "@/lib/recorrencia";
 import type { EventoRow, MembroRow } from "@/lib/supabase/tipos";
 
 const MEMBROS: MembroRow[] = [
-  { id: "m1", email: "gui@insper.ai", name: "Guilherme Leal", cargo: "Presidente", is_admin: true, created_at: "2026-08-01T12:00:00Z" },
-  { id: "m2", email: "alex@insper.ai", name: "Alex Chequer", cargo: "Diretor Acadêmico", is_admin: false, created_at: "2026-08-01T12:00:00Z" },
+  { id: "m1", email: "gui@insper.ai", name: "Guilherme Leal", cargo: "Presidente", nivel: "diretoria", is_admin: true, created_at: "2026-08-01T12:00:00Z" },
+  { id: "m2", email: "alex@insper.ai", name: "Alex Chequer", cargo: "Diretor Acadêmico", nivel: "diretoria", is_admin: false, created_at: "2026-08-01T12:00:00Z" },
 ];
 
 function linha(p: Partial<EventoRow> & Pick<EventoRow, "id" | "title" | "category" | "start_at" | "end_at">): EventoRow {
@@ -33,6 +33,7 @@ function linha(p: Partial<EventoRow> & Pick<EventoRow, "id" | "title" | "categor
     series_id: null,
     original_start: null,
     cancelled: false,
+    visibilidade: "diretoria",
     created_by: "m1",
     updated_by: "m2",
     created_at: "2026-08-01T12:00:00+00:00",

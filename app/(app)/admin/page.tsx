@@ -18,7 +18,8 @@ export default async function PaginaAdmin() {
       <div>
         <h1 className="t-h2">Membros</h1>
         <p className="t-apoio mt-2">
-          Quem está nesta lista entra com a conta Google do e-mail cadastrado e pode ver e editar tudo. Admins também mexem nesta lista.
+          Quem está nesta lista entra com a conta Google do e-mail cadastrado. A diretoria cria e edita eventos e escolhe quem vê cada um; membros e trainees só veem os eventos liberados
+          para o seu nível. Admins também mexem nesta lista.
         </p>
       </div>
       <TabelaMembros inicial={membros ?? []} meuId={membro.id} />

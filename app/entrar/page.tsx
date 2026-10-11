@@ -19,8 +19,8 @@ export default async function Entrar({ searchParams }: { searchParams: Promise<{
       <div className="flex w-full max-w-sm flex-col items-center text-center">
         <BrandMark className="h-10 w-12" />
         <p className="t-meta mt-6">Insper AI</p>
-        <h1 className="t-h2 mt-2">Agenda da Diretoria</h1>
-        <p className="t-apoio mt-3">Eventos, aulas, reuniões e prazos da diretoria, em um só lugar. Só membros cadastrados entram.</p>
+        <h1 className="t-h2 mt-2">Agenda</h1>
+        <p className="t-apoio mt-3">Eventos, aulas, reuniões e prazos da Insper AI, em um só lugar. Só membros cadastrados entram.</p>
 
         <div className="mt-8 w-full">
           <BotaoGoogle next={destino} />

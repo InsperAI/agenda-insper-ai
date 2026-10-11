@@ -1,5 +1,5 @@
 /**
- * Tipos do banco, escritos à mão para espelhar supabase/migrations/0001_init.sql.
+ * Tipos do banco, escritos à mão para espelhar supabase/migrations/ (0001, 0002).
  * Se o esquema mudar, mude a migração primeiro e depois este arquivo.
  */
 
@@ -7,12 +7,15 @@ export type Json = string | number | boolean | null | { [key: string]: Json | un
 
 export type Categoria = "evento" | "aula" | "reuniao" | "prazo";
 export type Frequencia = "semanal" | "quinzenal" | "mensal";
+/** Ordem importa (enum `nivel` no banco): trainee < membro < diretoria. */
+export type Nivel = "trainee" | "membro" | "diretoria";
 
 export type MembroRow = {
   id: string;
   email: string;
   name: string;
   cargo: string;
+  nivel: Nivel;
   is_admin: boolean;
   created_at: string;
 };
@@ -21,6 +24,7 @@ export type MembroInsert = {
   email: string;
   name: string;
   cargo?: string;
+  nivel?: Nivel;
   is_admin?: boolean;
   created_at?: string;
 };
@@ -47,6 +51,7 @@ export type EventoRow = {
   series_id: string | null;
   original_start: string | null;
   cancelled: boolean;
+  visibilidade: Nivel;
   created_by: string | null;
   updated_by: string | null;
   created_at: string;
@@ -67,6 +72,7 @@ export type EventoInsert = {
   series_id?: string | null;
   original_start?: string | null;
   cancelled?: boolean;
+  visibilidade?: Nivel;
   created_by?: string | null;
   updated_by?: string | null;
   created_at?: string;
@@ -103,8 +109,10 @@ export type Database = {
       current_member_id: { Args: Record<PropertyKey, never>; Returns: string | null };
       is_member: { Args: Record<PropertyKey, never>; Returns: boolean };
       is_admin: { Args: Record<PropertyKey, never>; Returns: boolean };
+      current_nivel: { Args: Record<PropertyKey, never>; Returns: Nivel | null };
+      pode_editar: { Args: Record<PropertyKey, never>; Returns: boolean };
     };
-    Enums: { categoria: Categoria; frequencia: Frequencia };
+    Enums: { categoria: Categoria; frequencia: Frequencia; nivel: Nivel };
     CompositeTypes: { [_ in never]: never };
   };
 };

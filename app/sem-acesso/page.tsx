@@ -17,7 +17,7 @@ export default async function SemAcesso() {
         <p className="t-meta mt-6">Insper AI</p>
         <h1 className="t-h2 mt-2">Sem acesso</h1>
         <p className="t-apoio mt-3">
-          Você entrou como <span className="text-ia-petroleo">{user.email}</span>, mas esse e-mail ainda não está na lista da diretoria.
+          Você entrou como <span className="text-ia-petroleo">{user.email}</span>, mas esse e-mail ainda não está na lista de membros.
         </p>
         <p className="t-apoio mt-2">Peça a um admin para incluir você em Membros, depois entre de novo.</p>
         <form action="/auth/sair" method="post" className="mt-8">

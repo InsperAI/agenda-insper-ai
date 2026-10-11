@@ -13,7 +13,7 @@ export default async function PaginaAssinar() {
       <div>
         <h1 className="t-h2">Assinar no seu calendário</h1>
         <p className="t-apoio mt-2">
-          Adicione a agenda da diretoria ao Google Agenda, Apple Calendar ou Outlook. Ela aparece junto dos seus compromissos e se atualiza sozinha
+          Adicione a agenda da Insper AI ao Google Agenda, Apple Calendar ou Outlook. Ela aparece junto dos seus compromissos e se atualiza sozinha
           (o Google demora de 12 a 24 h para puxar mudanças; a Apple, alguns minutos).
         </p>
       </div>

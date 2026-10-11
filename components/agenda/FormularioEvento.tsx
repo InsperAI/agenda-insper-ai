@@ -6,10 +6,12 @@ import Alternador from "@/components/ui/Alternador";
 import Botao from "@/components/ui/Botao";
 import Campo from "@/components/ui/Campo";
 import Dialogo from "@/components/ui/Dialogo";
+import Segmentado from "@/components/ui/Segmentado";
 import { CATEGORIAS } from "@/lib/categorias";
 import type { DadosEvento } from "@/lib/eventos";
 import { deChaveDia, deInputDataHora, paraInputData, paraInputDataHora, sp } from "@/lib/fuso";
-import type { Categoria, Frequencia } from "@/lib/supabase/tipos";
+import { OPCOES_VISIBILIDADE } from "@/lib/niveis";
+import type { Categoria, Frequencia, Nivel } from "@/lib/supabase/tipos";
 import CampoRecorrencia, { type FreqOuNunca } from "./CampoRecorrencia";
 
 export type ModoFormulario = "criar" | "editar-unico" | "editar-esta" | "editar-serie";
@@ -25,6 +27,7 @@ export type ValoresIniciais = {
   description?: string;
   freq?: Frequencia | null;
   until?: string | null;
+  visibilidade?: Nivel;
 };
 
 const TITULOS: Record<ModoFormulario, string> = {
@@ -69,6 +72,7 @@ export default function FormularioEvento({
   const [description, setDescription] = useState(inicial.description ?? "");
   const [freq, setFreq] = useState<FreqOuNunca>(inicial.freq ?? "nunca");
   const [until, setUntil] = useState(inicial.until ?? fimDoSemestre(inicial.inicio));
+  const [visibilidade, setVisibilidade] = useState<Nivel>(inicial.visibilidade ?? "diretoria");
   const [erro, setErro] = useState<string | null>(null);
 
   const mostraRecorrencia = modo !== "editar-esta";
@@ -134,6 +138,7 @@ export default function FormularioEvento({
       description: description.trim(),
       freq: repete ? (freq as Frequencia) : null,
       until: repete ? until : null,
+      visibilidade,
     });
   }
 
@@ -184,6 +189,14 @@ export default function FormularioEvento({
             })}
           </div>
         </div>
+
+        {/* Uma ocorrência isolada segue a visibilidade da série. */}
+        {modo !== "editar-esta" && (
+          <div className="flex flex-col gap-1.5">
+            <span className="text-[0.8125rem] text-ia-apoio">Quem vê</span>
+            <Segmentado opcoes={OPCOES_VISIBILIDADE} valor={visibilidade} aoMudar={setVisibilidade} rotulo="Quem vê" className="self-start" />
+          </div>
+        )}
 
         <div className="flex items-center justify-between rounded-lg border border-ia-regua px-3 py-2.5">
           <label htmlFor="ev-dia-inteiro" className="text-[0.9rem] text-ia-corpo">

@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { supabaseNavegador, type ClienteSupabase } from "./supabase/client";
-import type { Categoria, EventoRow, Frequencia, MembroRow } from "./supabase/tipos";
+import type { Categoria, EventoRow, Frequencia, MembroRow, Nivel } from "./supabase/tipos";
 import type { Ocorrencia } from "./recorrencia";
 
 /** O que o formulário entrega. Datas em ISO (instantes). */
@@ -17,6 +17,8 @@ export type DadosEvento = {
   description: string;
   freq: Frequencia | null;
   until: string | null;
+  /** Nível mínimo para ver. Filhas herdam do mestre por trigger (0002_niveis.sql). */
+  visibilidade: Nivel;
 };
 
 /* ── Leitura ──────────────────────────────────────────────────────────────── */

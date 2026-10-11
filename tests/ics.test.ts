@@ -17,6 +17,7 @@ function linha(p: Partial<EventoRow> & Pick<EventoRow, "id" | "start_at" | "end_
     series_id: null,
     original_start: null,
     cancelled: false,
+    visibilidade: "diretoria",
     created_by: null,
     updated_by: null,
     created_at: "2026-08-01T12:00:00+00:00",
