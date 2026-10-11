@@ -9,16 +9,20 @@ import { IcoLapis, IcoLixeira } from "@/components/ui/Icones";
 import { ordenarMembros, traduzirErroMembro } from "@/lib/membros";
 import { NIVEIS } from "@/lib/niveis";
 import { supabaseNavegador } from "@/lib/supabase/client";
-import type { MembroRow } from "@/lib/supabase/tipos";
+import type { MembroRow, PedidoRow } from "@/lib/supabase/tipos";
 import DialogoMembro from "./DialogoMembro";
 import FormNovoMembro from "./FormNovoMembro";
 import ImportarMembros from "./ImportarMembros";
+import PedidosAcesso from "./PedidosAcesso";
 
-/** Tela Membros: cadastro (um a um ou em lista), lista por nível, edição e remoção. */
-export default function TabelaMembros({ inicial, meuId }: { inicial: MembroRow[]; meuId: string }) {
+/** Tela Membros: pedidos, cadastro (um a um ou em lista), lista por nível, edição e remoção. */
+export default function TabelaMembros({ inicial, pedidosIniciais, meuId }: { inicial: MembroRow[]; pedidosIniciais: PedidoRow[]; meuId: string }) {
   const sb = useMemo(() => supabaseNavegador(), []);
   const router = useRouter();
   const [lista, setLista] = useState(() => ordenarMembros(inicial));
+  // Os pedidos vêm do servidor a cada router.refresh(); aqui só some na hora o que já foi resolvido.
+  const [resolvidos, setResolvidos] = useState<ReadonlySet<string>>(() => new Set());
+  const pedidos = useMemo(() => pedidosIniciais.filter((p) => !resolvidos.has(p.id)), [pedidosIniciais, resolvidos]);
   const [aviso, setAviso] = useState<string | null>(null);
   const fecharAviso = useCallback(() => setAviso(null), []);
   const [editando, setEditando] = useState<MembroRow | null>(null);
@@ -28,7 +32,8 @@ export default function TabelaMembros({ inicial, meuId }: { inicial: MembroRow[]
   const grupos = useMemo(() => NIVEIS.map((n) => ({ ...n, membros: lista.filter((m) => m.nivel === n.id) })), [lista]);
 
   function adicionar(novos: MembroRow[]) {
-    setLista((l) => ordenarMembros([...l, ...novos]));
+    const ids = new Set(novos.map((m) => m.id));
+    setLista((l) => ordenarMembros([...l.filter((m) => !ids.has(m.id)), ...novos]));
     router.refresh();
   }
 
@@ -52,6 +57,15 @@ export default function TabelaMembros({ inicial, meuId }: { inicial: MembroRow[]
 
   return (
     <div className="flex flex-col gap-6">
+      <PedidosAcesso
+        pedidos={pedidos}
+        aoResolver={(id) => {
+          setResolvidos((r) => new Set(r).add(id));
+          router.refresh();
+        }}
+        aoAprovar={(m) => adicionar([m])}
+        aoAvisar={setAviso}
+      />
       <FormNovoMembro aoAdicionar={(m) => adicionar([m])} aoAvisar={setAviso} />
       <ImportarMembros aoAdicionar={adicionar} aoAvisar={setAviso} />
 

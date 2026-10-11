@@ -6,12 +6,12 @@ import Alternador from "@/components/ui/Alternador";
 import Botao from "@/components/ui/Botao";
 import Campo from "@/components/ui/Campo";
 import Dialogo from "@/components/ui/Dialogo";
-import Segmentado from "@/components/ui/Segmentado";
+import { IcoChecar } from "@/components/ui/Icones";
 import { CATEGORIAS } from "@/lib/categorias";
 import type { DadosEvento } from "@/lib/eventos";
 import { deChaveDia, deInputDataHora, paraInputData, paraInputDataHora, sp } from "@/lib/fuso";
-import { OPCOES_VISIBILIDADE } from "@/lib/niveis";
-import type { Categoria, Frequencia, Nivel } from "@/lib/supabase/tipos";
+import { alternarPublico, NIVEIS_PUBLICO } from "@/lib/niveis";
+import type { Categoria, Frequencia, NivelPublico } from "@/lib/supabase/tipos";
 import CampoRecorrencia, { type FreqOuNunca } from "./CampoRecorrencia";
 
 export type ModoFormulario = "criar" | "editar-unico" | "editar-esta" | "editar-serie";
@@ -27,7 +27,7 @@ export type ValoresIniciais = {
   description?: string;
   freq?: Frequencia | null;
   until?: string | null;
-  visibilidade?: Nivel;
+  publico?: NivelPublico[];
 };
 
 const TITULOS: Record<ModoFormulario, string> = {
@@ -72,7 +72,7 @@ export default function FormularioEvento({
   const [description, setDescription] = useState(inicial.description ?? "");
   const [freq, setFreq] = useState<FreqOuNunca>(inicial.freq ?? "nunca");
   const [until, setUntil] = useState(inicial.until ?? fimDoSemestre(inicial.inicio));
-  const [visibilidade, setVisibilidade] = useState<Nivel>(inicial.visibilidade ?? "diretoria");
+  const [publico, setPublico] = useState<NivelPublico[]>(inicial.publico ?? []);
   const [erro, setErro] = useState<string | null>(null);
 
   const mostraRecorrencia = modo !== "editar-esta";
@@ -138,7 +138,7 @@ export default function FormularioEvento({
       description: description.trim(),
       freq: repete ? (freq as Frequencia) : null,
       until: repete ? until : null,
-      visibilidade,
+      publico,
     });
   }
 
@@ -190,11 +190,33 @@ export default function FormularioEvento({
           </div>
         </div>
 
-        {/* Uma ocorrência isolada segue a visibilidade da série. */}
+        {/* Uma ocorrência isolada segue o público da série. */}
         {modo !== "editar-esta" && (
           <div className="flex flex-col gap-1.5">
             <span className="text-[0.8125rem] text-ia-apoio">Quem vê</span>
-            <Segmentado opcoes={OPCOES_VISIBILIDADE} valor={visibilidade} aoMudar={setVisibilidade} rotulo="Quem vê" className="self-start" />
+            <div role="group" aria-label="Quem vê" className="flex flex-wrap gap-1.5">
+              <span className="inline-flex h-9 items-center gap-2 rounded-full border border-ia-regua bg-ia-nevoa px-3.5 text-[0.875rem] text-ia-apoio" title="A diretoria sempre vê">
+                <IcoChecar width={14} height={14} /> Diretoria
+              </span>
+              {NIVEIS_PUBLICO.map((n) => {
+                const on = publico.includes(n.id);
+                return (
+                  <button
+                    key={n.id}
+                    type="button"
+                    role="checkbox"
+                    aria-checked={on}
+                    onClick={() => setPublico((p) => alternarPublico(p, n.id))}
+                    className={`inline-flex h-9 items-center gap-2 rounded-full border px-3.5 text-[0.875rem] transition-colors ${
+                      on ? "border-ia-petroleo bg-ia-petroleo text-ia-papel" : "border-ia-regua text-ia-corpo hover:bg-ia-nevoa"
+                    }`}
+                  >
+                    {on && <IcoChecar width={14} height={14} />}
+                    {n.plural}
+                  </button>
+                );
+              })}
+            </div>
           </div>
         )}
 

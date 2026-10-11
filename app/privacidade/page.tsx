@@ -9,12 +9,12 @@ const SECOES: { titulo: string; texto: string }[] = [
   {
     titulo: "O que guardamos",
     texto:
-      "Ao entrar com o Google, recebemos apenas seu nome, e-mail e foto de perfil (escopos openid, email e profile). Na lista de membros guardamos nome, e-mail, cargo e nível de acesso. Nos eventos registramos quem criou e quem alterou cada um.",
+      "Ao entrar com o Google, recebemos apenas seu nome, e-mail e foto de perfil (escopos openid, email e profile). Na lista de membros guardamos nome, e-mail, cargo e nível de acesso. Se você pedir acesso, guardamos o nome, o e-mail, o cargo e o nível do pedido até um admin aprovar ou recusar; recusado ou cancelado, o pedido é apagado. Nos eventos registramos quem criou e quem alterou cada um.",
   },
   {
     titulo: "Para que usamos",
     texto:
-      "Só para identificar você, liberar o acesso à agenda se o seu e-mail estiver na lista de membros, mostrar só os eventos liberados para o seu nível (diretoria, membro ou trainee) e mostrar aos colegas quem fez cada alteração. Não usamos os dados para publicidade, não vendemos e não compartilhamos com terceiros.",
+      "Só para identificar você, liberar o acesso à agenda se o seu e-mail estiver na lista de membros, mostrar só os eventos liberados para o seu nível (diretoria, membros ou trainees) e mostrar aos colegas quem fez cada alteração. Não usamos os dados para publicidade, não vendemos e não compartilhamos com terceiros.",
   },
   {
     titulo: "Onde ficam",

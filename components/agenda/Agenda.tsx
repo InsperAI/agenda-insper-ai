@@ -70,7 +70,7 @@ function valoresIniciais(f: Formulario): { modo: ModoFormulario; inicial: Valore
       description: e.description,
       freq: modo === "editar-serie" ? e.freq : null,
       until: modo === "editar-serie" ? e.until : null,
-      visibilidade: e.visibilidade,
+      publico: e.publico,
     },
   };
 }

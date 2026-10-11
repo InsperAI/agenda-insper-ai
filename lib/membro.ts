@@ -9,7 +9,7 @@ export type MembroAtual = Pick<MembroRow, "id" | "email" | "name" | "cargo" | "n
  * uma única consulta por requisição mesmo que layout e página chamem os dois.
  * `membro` nulo com `user` presente = entrou com Google mas não está na allowlist.
  */
-export const obterMembroAtual = cache(async (): Promise<{ user: { id: string; email: string } | null; membro: MembroAtual | null }> => {
+export const obterMembroAtual = cache(async (): Promise<{ user: { id: string; email: string; nome: string } | null; membro: MembroAtual | null }> => {
   const supabase = await supabaseServidor();
   const {
     data: { user },
@@ -22,5 +22,7 @@ export const obterMembroAtual = cache(async (): Promise<{ user: { id: string; em
     .eq("email", user.email)
     .maybeSingle();
 
-  return { user: { id: user.id, email: user.email }, membro: membro ?? null };
+  // Nome do perfil Google, para sugerir no pedido de acesso.
+  const nome = typeof user.user_metadata?.full_name === "string" ? user.user_metadata.full_name : "";
+  return { user: { id: user.id, email: user.email, nome }, membro: membro ?? null };
 });

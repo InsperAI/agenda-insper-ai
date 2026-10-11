@@ -11,7 +11,7 @@ export const runtime = "nodejs";
  * Feed .ics por membro, autenticado só pelo token na URL (é assim que Google e
  * Apple Calendar assinam). Usa a service role porque não há sessão de usuário;
  * o token é o que prova quem está pedindo. A service role ignora a RLS, então a
- * visibilidade por nível é aplicada aqui com `visiveisPara`.
+ * visibilidade por nível (público do evento) é aplicada aqui com `visiveisPara`.
  */
 export async function GET(_request: Request, { params }: { params: Promise<{ token: string }> }) {
   const { token } = await params;

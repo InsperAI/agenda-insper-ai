@@ -1,9 +1,9 @@
-import type { Nivel } from "./supabase/tipos";
+import type { Nivel, NivelPublico } from "./supabase/tipos";
 
 /**
- * Níveis de acesso. Espelha o enum `nivel` de supabase/migrations/0002_niveis.sql,
- * onde a RLS faz valer as mesmas regras; aqui é para a interface e para o feed
- * .ics (que usa a service role e por isso filtra à mão).
+ * Níveis de acesso e público dos eventos. Espelha supabase/migrations/0002 e
+ * 0003, onde a RLS faz valer as mesmas regras; aqui é para a interface e para o
+ * feed .ics (que usa a service role e por isso filtra à mão).
  */
 export const NIVEIS: readonly { id: Nivel; rotulo: string; plural: string }[] = [
   { id: "diretoria", rotulo: "Diretoria", plural: "Diretoria" },
@@ -13,26 +13,19 @@ export const NIVEIS: readonly { id: Nivel; rotulo: string; plural: string }[] = 
 
 export const ROTULO_NIVEL: Record<Nivel, string> = { diretoria: "Diretoria", membro: "Membro", trainee: "Trainee" };
 
-/** Opções de "Quem vê" no formulário de evento: o valor é o nível mínimo. */
-export const OPCOES_VISIBILIDADE: { valor: Nivel; rotulo: string; frase: string }[] = [
-  { valor: "diretoria", rotulo: "Só diretoria", frase: "só a diretoria" },
-  { valor: "membro", rotulo: "Diretoria e membros", frase: "diretoria e membros" },
-  { valor: "trainee", rotulo: "Todos", frase: "todos, inclusive trainees" },
-];
-
-export const FRASE_VISIBILIDADE: Record<Nivel, string> = Object.fromEntries(
-  OPCOES_VISIBILIDADE.map((o) => [o.valor, o.frase]),
-) as Record<Nivel, string>;
-
-const ORDEM: Record<Nivel, number> = { trainee: 0, membro: 1, diretoria: 2 };
+/** Quem pode ser marcado em "Quem vê" (a diretoria sempre vê). Ordem de exibição. */
+export const NIVEIS_PUBLICO: readonly { id: NivelPublico; plural: string }[] = [
+  { id: "membro", plural: "Membros" },
+  { id: "trainee", plural: "Trainees" },
+] as const;
 
 export function ehNivel(valor: string): valor is Nivel {
-  return Object.hasOwn(ORDEM, valor);
+  return Object.hasOwn(ROTULO_NIVEL, valor);
 }
 
-/** Quem é `nivel` vê um evento com essa `visibilidade` (nível mínimo)? */
-export function podeVer(nivel: Nivel, visibilidade: Nivel): boolean {
-  return ORDEM[visibilidade] <= ORDEM[nivel];
+/** A diretoria vê tudo; os outros só eventos que marcaram o seu nível. */
+export function podeVer(nivel: Nivel, publico: readonly NivelPublico[]): boolean {
+  return nivel === "diretoria" || publico.includes(nivel);
 }
 
 /** Só a diretoria cria, edita e exclui eventos. */
@@ -41,6 +34,20 @@ export function podeEditar(nivel: Nivel): boolean {
 }
 
 /** Para quem não passa pela RLS (feed .ics com service role): só o que `nivel` pode ver. */
-export function visiveisPara<T extends { visibilidade: Nivel }>(linhas: readonly T[], nivel: Nivel): T[] {
-  return linhas.filter((l) => podeVer(nivel, l.visibilidade));
+export function visiveisPara<T extends { publico: readonly NivelPublico[] }>(linhas: readonly T[], nivel: Nivel): T[] {
+  return linhas.filter((l) => podeVer(nivel, l.publico));
+}
+
+/** Liga/desliga um nível no público, devolvendo lista nova na ordem de NIVEIS_PUBLICO. */
+export function alternarPublico(publico: readonly NivelPublico[], nivel: NivelPublico): NivelPublico[] {
+  const ligado = publico.includes(nivel);
+  return NIVEIS_PUBLICO.map((n) => n.id).filter((id) => (id === nivel ? !ligado : publico.includes(id)));
+}
+
+/** "Visível para …" no painel do evento. */
+export function frasePublico(publico: readonly NivelPublico[]): string {
+  const nomes = NIVEIS_PUBLICO.filter((n) => publico.includes(n.id)).map((n) => n.plural.toLowerCase());
+  if (nomes.length === 0) return "só a diretoria";
+  if (nomes.length === 1) return `diretoria e ${nomes[0]}`;
+  return `diretoria, ${nomes.slice(0, -1).join(", ")} e ${nomes[nomes.length - 1]}`;
 }

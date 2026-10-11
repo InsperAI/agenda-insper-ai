@@ -11,7 +11,10 @@ export default async function PaginaAdmin() {
   if (!membro?.is_admin) redirect("/agenda");
 
   const supabase = await supabaseServidor();
-  const { data: membros } = await supabase.from("members").select("*").order("name");
+  const [{ data: membros }, { data: pedidos }] = await Promise.all([
+    supabase.from("members").select("*").order("name"),
+    supabase.from("access_requests").select("*").order("created_at"),
+  ]);
 
   return (
     <div className="wrap-estreito flex flex-col gap-6">
@@ -20,9 +23,10 @@ export default async function PaginaAdmin() {
         <p className="t-apoio mt-2">
           Quem está nesta lista entra com a conta Google do e-mail cadastrado. A diretoria cria e edita eventos e escolhe quem vê cada um; membros e trainees só veem os eventos liberados
           para o seu nível. Admins também mexem nesta lista.
+          Quem entra com o Google sem estar cadastrado pode pedir acesso; os pedidos aparecem aqui.
         </p>
       </div>
-      <TabelaMembros inicial={membros ?? []} meuId={membro.id} />
+      <TabelaMembros inicial={membros ?? []} pedidosIniciais={pedidos ?? []} meuId={membro.id} />
     </div>
   );
 }

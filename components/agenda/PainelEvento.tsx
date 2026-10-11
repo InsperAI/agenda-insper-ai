@@ -8,7 +8,7 @@ import { CATEGORIA, FREQUENCIA } from "@/lib/categorias";
 import { dataComAno, dataHoraCurta, linhaQuando } from "@/lib/datas";
 import { deChaveDia } from "@/lib/fuso";
 import { serializarOcorrencia } from "@/lib/ics";
-import { FRASE_VISIBILIDADE } from "@/lib/niveis";
+import { frasePublico } from "@/lib/niveis";
 import { ehDeSerie, type Ocorrencia } from "@/lib/recorrencia";
 import type { MembroRow } from "@/lib/supabase/tipos";
 
@@ -105,7 +105,7 @@ export default function PainelEvento({
             <Linha icone={<IcoCalendario />}>{linhaQuando(occ.inicio, occ.fim, occ.evento.all_day)}</Linha>
             {ehDeSerie(occ) && <Linha icone={<IcoRepetir />}>{descricaoSerie(occ)}</Linha>}
             {occ.evento.location && <Linha icone={<IcoLocal />}>{occ.evento.location}</Linha>}
-            <Linha icone={<IcoPessoa />}>Visível para {FRASE_VISIBILIDADE[occ.evento.visibilidade]}</Linha>
+            <Linha icone={<IcoPessoa />}>Visível para {frasePublico(occ.evento.publico)}</Linha>
             {occ.evento.link && (
               <Linha icone={<IcoLink />}>
                 <a href={occ.evento.link} target="_blank" rel="noreferrer" className="break-all text-ia-cobalto underline decoration-1 underline-offset-4 hover:text-ia-petroleo">

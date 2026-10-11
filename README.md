@@ -1,6 +1,6 @@
 # Agenda · Insper AI
 
-Calendário compartilhado da Insper AI: eventos, aulas, reuniões e prazos. Três níveis: a **diretoria** cria e edita e escolhe quem vê cada evento; **membros** e **trainees** só veem o que foi liberado para eles. Cada alteração fica registrada com quem fez. Modo claro/escuro. Feed `.ics` por pessoa para assinar no Google Agenda / Apple Calendar.
+Calendário compartilhado da Insper AI: eventos, aulas, reuniões e prazos. Três níveis: a **diretoria** cria e edita tudo e marca, em cada evento, se **membros** e/ou **trainees** também veem; os dois só veem o que foi liberado para eles. Quem entra com o Google sem estar cadastrado pede acesso pelo site e um admin aprova. Cada alteração fica registrada com quem fez. Modo claro/escuro. Feed `.ics` por pessoa para assinar no Google Agenda / Apple Calendar.
 
 **Stack:** Next.js 16 (App Router) na Vercel · Supabase (Postgres + Auth com Google) · Tailwind v4 com os tokens do Playbook de Marca.
 
@@ -26,7 +26,7 @@ Nenhuma das contas existe ainda. A ordem importa: Supabase → Google Cloud → 
 
 ### B. Supabase (supabase.com, plano Free)
 1. **New project** → região `South America (São Paulo)`. Guarde a senha do banco.
-2. **SQL Editor** → cole `supabase/migrations/0001_init.sql` inteiro → **Run**. Depois, numa query nova, `supabase/migrations/0002_niveis.sql` → **Run**. Cada migração roda uma vez só, em ordem.
+2. **SQL Editor** → cole `supabase/migrations/0001_init.sql` inteiro → **Run**. Depois, uma query nova para cada uma, em ordem: `0002_niveis.sql` e `0003_publico_e_pedidos.sql` → **Run**. Cada migração roda uma vez só.
 3. Abra `supabase/seed.sql`, troque o e-mail pelo da **sua conta Google** e o nome, cole no SQL Editor → **Run**. Você é o primeiro admin.
 4. **Project Settings → API**: copie *Project URL*, a chave *anon / publishable* e a chave *service_role / secret* para o `.env.local`.
 5. **Authentication → URL Configuration**:
@@ -48,14 +48,15 @@ Pronto para testar local: `npm run dev` → `/entrar` → Google → `/agenda`.
 3. **Deploy**. Copie o domínio gerado.
 4. Volte ao Supabase (B.5): *Site URL* = domínio da Vercel; confirme que ele está nas *Redirect URLs*. Na Vercel, ajuste `NEXT_PUBLIC_SITE_URL` se mudou e faça **Redeploy**.
 
-Para adicionar as pessoas: entre no app → **Membros** → uma a uma (e-mail da conta Google, nome, nível, cargo) ou **Colar uma lista** com linhas `email, nome, nível, cargo` copiadas de uma planilha.
+Para adicionar as pessoas: mande o link do site; quem não está cadastrado cai em *Sem acesso* e pede acesso ali (aparece em **Membros → Pedidos**, com contador na barra). Ou cadastre em **Membros** uma a uma (e-mail da conta Google, nome, nível, cargo) ou **Colar uma lista** com linhas `email, nome, nível, cargo` copiadas de uma planilha.
 
 ## 3. Como funciona
 
 | Peça | Onde |
 |---|---|
 | Esquema, triggers de auditoria, RLS | `supabase/migrations/0001_init.sql` |
-| Níveis (diretoria/membro/trainee) e visibilidade por evento | `supabase/migrations/0002_niveis.sql`, `lib/niveis.ts` |
+| Níveis (diretoria/membro/trainee) | `supabase/migrations/0002_niveis.sql`, `lib/niveis.ts` |
+| Público por evento (`publico`) e pedidos de acesso | `supabase/migrations/0003_publico_e_pedidos.sql`, `app/sem-acesso/`, `components/admin/PedidosAcesso.tsx` |
 | Tema claro/escuro (`light-dark()` + cookie `tema`) | `app/globals.css`, `lib/tema.ts` |
 | Portão de membro (logado mas fora da lista → `/sem-acesso`) | `app/(app)/layout.tsx`, `proxy.ts` |
 | Expansão de séries (semanal/quinzenal/mensal + exceções) | `lib/recorrencia.ts` |
@@ -65,7 +66,7 @@ Para adicionar as pessoas: entre no app → **Membros** → uma a uma (e-mail da
 
 **Recorrência:** uma linha "mestre" guarda `freq` + `until`. Editar/excluir *só esta ocorrência* cria uma linha filha com `series_id` + `original_start` (ou `cancelled = true`). Editar *toda a série* atualiza o mestre e propaga título/local/etc. para as filhas; mudar horário ou repetição apaga as filhas (o app avisa antes).
 
-**Permissões:** só e-mails em `members` entram. Cada evento tem `visibilidade` (nível mínimo); a RLS só devolve o que o nível da pessoa pode ver, e só a diretoria cria/edita/exclui. Só admins alteram `members`, e admin precisa ser da diretoria (constraint). O último admin não pode ser removido (trigger). `created_by/updated_by` são preenchidos por trigger, não pelo cliente.
+**Permissões:** só e-mails em `members` entram. Cada evento tem `publico` (membro e/ou trainee; a diretoria sempre vê); a RLS só devolve o que o nível da pessoa pode ver, e só a diretoria cria/edita/exclui. Só admins alteram `members`, e admin precisa ser da diretoria (constraint). O último admin não pode ser removido (trigger). `created_by/updated_by` são preenchidos por trigger, não pelo cliente.
 
 **Feed:** `GET /api/feed/<token>` é público, autenticado só pelo token (48 hex) do membro. Como usa a service role (sem RLS), filtra pelo nível do dono do token com `visiveisPara()`. Em *Assinar* dá para copiar, abrir no Google/Apple e gerar um novo token.
 

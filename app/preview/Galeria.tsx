@@ -33,7 +33,7 @@ function linha(p: Partial<EventoRow> & Pick<EventoRow, "id" | "title" | "categor
     series_id: null,
     original_start: null,
     cancelled: false,
-    visibilidade: "diretoria",
+    publico: [],
     created_by: "m1",
     updated_by: "m2",
     created_at: "2026-08-01T12:00:00+00:00",

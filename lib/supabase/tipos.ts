@@ -1,5 +1,5 @@
 /**
- * Tipos do banco, escritos à mão para espelhar supabase/migrations/ (0001, 0002).
+ * Tipos do banco, escritos à mão para espelhar supabase/migrations/ (0001–0003).
  * Se o esquema mudar, mude a migração primeiro e depois este arquivo.
  */
 
@@ -9,6 +9,8 @@ export type Categoria = "evento" | "aula" | "reuniao" | "prazo";
 export type Frequencia = "semanal" | "quinzenal" | "mensal";
 /** Ordem importa (enum `nivel` no banco): trainee < membro < diretoria. */
 export type Nivel = "trainee" | "membro" | "diretoria";
+/** Quem pode ser marcado no público de um evento; a diretoria sempre vê. */
+export type NivelPublico = Exclude<Nivel, "diretoria">;
 
 export type MembroRow = {
   id: string;
@@ -51,7 +53,7 @@ export type EventoRow = {
   series_id: string | null;
   original_start: string | null;
   cancelled: boolean;
-  visibilidade: Nivel;
+  publico: NivelPublico[];
   created_by: string | null;
   updated_by: string | null;
   created_at: string;
@@ -72,13 +74,24 @@ export type EventoInsert = {
   series_id?: string | null;
   original_start?: string | null;
   cancelled?: boolean;
-  visibilidade?: Nivel;
+  publico?: NivelPublico[];
   created_by?: string | null;
   updated_by?: string | null;
   created_at?: string;
   updated_at?: string;
 };
 export type EventoUpdate = Partial<EventoInsert>;
+
+export type PedidoRow = {
+  id: string;
+  email: string;
+  name: string;
+  cargo: string;
+  nivel: Nivel;
+  created_at: string;
+};
+/** `email` vem do JWT (default no banco); o cliente não manda. */
+export type PedidoInsert = { name: string; cargo?: string; nivel?: NivelPublico };
 
 export type Database = {
   public: {
@@ -101,6 +114,12 @@ export type Database = {
         Update: EventoUpdate;
         Relationships: [];
       };
+      access_requests: {
+        Row: PedidoRow;
+        Insert: PedidoInsert;
+        Update: Partial<PedidoInsert>;
+        Relationships: [];
+      };
     };
     Views: { [_ in never]: never };
     Functions: {
@@ -111,6 +130,8 @@ export type Database = {
       is_admin: { Args: Record<PropertyKey, never>; Returns: boolean };
       current_nivel: { Args: Record<PropertyKey, never>; Returns: Nivel | null };
       pode_editar: { Args: Record<PropertyKey, never>; Returns: boolean };
+      pode_ver: { Args: { p_publico: NivelPublico[] }; Returns: boolean };
+      aprovar_pedido: { Args: { p_id: string; p_nivel: Nivel }; Returns: MembroRow };
     };
     Enums: { categoria: Categoria; frequencia: Frequencia; nivel: Nivel };
     CompositeTypes: { [_ in never]: never };
