@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
-import BrandMark from "@/components/ui/BrandMark";
+import MarcaInsper from "@/components/ui/MarcaInsper";
 import { obterMembroAtual } from "@/lib/membro";
 import { supabaseServidor } from "@/lib/supabase/server";
 import PedidoAcesso from "./PedidoAcesso";
@@ -19,9 +19,8 @@ export default async function SemAcesso() {
   return (
     <main className="flex flex-1 flex-col items-center justify-center px-6 py-16">
       <div className="flex w-full max-w-sm flex-col items-center text-center">
-        <BrandMark className="h-10 w-12" />
-        <p className="t-meta mt-6">Insper AI</p>
-        <h1 className="t-h2 mt-2">{pedido ? "Aguardando aprovação" : "Sem acesso"}</h1>
+        <MarcaInsper />
+        <h1 className="t-h2 mt-8">{pedido ? "Aguardando aprovação" : "Sem acesso"}</h1>
         <p className="t-apoio mt-3">
           Você entrou como <span className="text-ia-petroleo">{user.email}</span>, que ainda não está na lista de membros.
           {!pedido && " Peça acesso abaixo; um admin aprova."}

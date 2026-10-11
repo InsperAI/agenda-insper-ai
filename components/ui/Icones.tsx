@@ -1,120 +1,57 @@
+import {
+  ArrowUpRight,
+  CalendarDays,
+  Check,
+  ChevronLeft,
+  ChevronRight,
+  Clock,
+  Copy,
+  Download,
+  Link2,
+  MapPin,
+  Pencil,
+  Plus,
+  Repeat2,
+  Search,
+  Trash2,
+  Users,
+  X,
+  type LucideIcon,
+} from "lucide-react";
 import type { SVGProps } from "react";
 
 type P = SVGProps<SVGSVGElement>;
 
-/** Ícones de traço 1.5 em caixa 16 × 16. Sempre decorativos (aria-hidden). */
-function base(p: P): P {
-  return {
-    width: 16,
-    height: 16,
-    viewBox: "0 0 16 16",
-    fill: "none",
-    stroke: "currentColor",
-    strokeWidth: 1.5,
-    strokeLinecap: "round",
-    strokeLinejoin: "round",
-    "aria-hidden": true,
-    ...p,
-  };
+/**
+ * Ícones do lucide-react com o traço e o tamanho da casa (16 px, traço 1.75).
+ * Os nomes `Ico*` ficam estáveis para não espalhar o nome da biblioteca pelo app.
+ * Sempre decorativos (aria-hidden); quem precisa de rótulo põe no botão.
+ */
+function ico(Icone: LucideIcon) {
+  const Ico = (p: P) => <Icone size={16} strokeWidth={1.75} aria-hidden {...p} />;
+  Ico.displayName = `Ico(${Icone.displayName ?? "lucide"})`;
+  return Ico;
 }
 
-export const IcoEsquerda = (p: P) => (
-  <svg {...base(p)}>
-    <path d="M10 3L5 8l5 5" />
-  </svg>
-);
-export const IcoDireita = (p: P) => (
-  <svg {...base(p)}>
-    <path d="M6 3l5 5-5 5" />
-  </svg>
-);
-export const IcoMais = (p: P) => (
-  <svg {...base(p)}>
-    <path d="M8 3v10M3 8h10" />
-  </svg>
-);
-export const IcoFechar = (p: P) => (
-  <svg {...base(p)}>
-    <path d="M4 4l8 8M12 4l-8 8" />
-  </svg>
-);
-export const IcoLupa = (p: P) => (
-  <svg {...base(p)}>
-    <circle cx="7" cy="7" r="4.5" />
-    <path d="M10.5 10.5L14 14" />
-  </svg>
-);
-export const IcoLocal = (p: P) => (
-  <svg {...base(p)}>
-    <path d="M8 14s4.5-4 4.5-7.5a4.5 4.5 0 10-9 0C3.5 10 8 14 8 14z" />
-    <circle cx="8" cy="6.5" r="1.5" />
-  </svg>
-);
-export const IcoLink = (p: P) => (
-  <svg {...base(p)}>
-    <path d="M6.5 9.5l3-3" />
-    <path d="M7 4.5l1-1a2.5 2.5 0 013.5 3.5l-1 1" />
-    <path d="M9 11.5l-1 1A2.5 2.5 0 014.5 9l1-1" />
-  </svg>
-);
-export const IcoRepetir = (p: P) => (
-  <svg {...base(p)}>
-    <path d="M2.5 7a5.5 5.5 0 019.5-3.5L13.5 5" />
-    <path d="M13.5 9a5.5 5.5 0 01-9.5 3.5L2.5 11" />
-    <path d="M13.5 2v3h-3M2.5 14v-3h3" />
-  </svg>
-);
-export const IcoBaixar = (p: P) => (
-  <svg {...base(p)}>
-    <path d="M8 2.5v8M4.5 7L8 10.5 11.5 7M3 13.5h10" />
-  </svg>
-);
-export const IcoLixeira = (p: P) => (
-  <svg {...base(p)}>
-    <path d="M3 4.5h10M6.5 2.5h3M5 4.5l.5 8.5h5l.5-8.5" />
-  </svg>
-);
-export const IcoLapis = (p: P) => (
-  <svg {...base(p)}>
-    <path d="M11 2.5l2.5 2.5L5 13.5H2.5V11L11 2.5z" />
-  </svg>
-);
-export const IcoRelogio = (p: P) => (
-  <svg {...base(p)}>
-    <circle cx="8" cy="8" r="5.5" />
-    <path d="M8 5v3l2 1.5" />
-  </svg>
-);
-export const IcoCalendario = (p: P) => (
-  <svg {...base(p)}>
-    <rect x="2.5" y="3.5" width="11" height="10" rx="1.5" />
-    <path d="M2.5 6.5h11M5.5 2v3M10.5 2v3" />
-  </svg>
-);
-export const IcoCopiar = (p: P) => (
-  <svg {...base(p)}>
-    <rect x="5.5" y="5.5" width="8" height="8" rx="1.5" />
-    <path d="M10.5 5.5v-2a1 1 0 00-1-1h-6a1 1 0 00-1 1v6a1 1 0 001 1h2" />
-  </svg>
-);
-export const IcoChecar = (p: P) => (
-  <svg {...base(p)}>
-    <path d="M3 8.5l3 3 7-7" />
-  </svg>
-);
-export const IcoPessoa = (p: P) => (
-  <svg {...base(p)}>
-    <circle cx="8" cy="5.5" r="2.75" />
-    <path d="M2.75 14a5.25 5.25 0 0110.5 0" />
-  </svg>
-);
-export const IcoExterno = (p: P) => (
-  <svg {...base(p)}>
-    <path d="M9 3h4v4M13 3L7.5 8.5M11 9.5V12a1 1 0 01-1 1H4a1 1 0 01-1-1V6a1 1 0 011-1h2.5" />
-  </svg>
-);
+export const IcoEsquerda = ico(ChevronLeft);
+export const IcoDireita = ico(ChevronRight);
+export const IcoMais = ico(Plus);
+export const IcoFechar = ico(X);
+export const IcoLupa = ico(Search);
+export const IcoLocal = ico(MapPin);
+export const IcoLink = ico(Link2);
+export const IcoRepetir = ico(Repeat2);
+export const IcoBaixar = ico(Download);
+export const IcoLixeira = ico(Trash2);
+export const IcoLapis = ico(Pencil);
+export const IcoRelogio = ico(Clock);
+export const IcoCalendario = ico(CalendarDays);
+export const IcoCopiar = ico(Copy);
+export const IcoChecar = ico(Check);
+export const IcoPessoa = ico(Users);
+export const IcoExterno = ico(ArrowUpRight);
 
-/** Logo do Google, colorido, para o botão de entrar. */
+/** Logo do Google, colorido, para o botão de entrar (marca: fica fora do lucide). */
 export const IcoGoogle = (p: P) => (
   <svg width={18} height={18} viewBox="0 0 48 48" aria-hidden="true" {...p}>
     <path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9 3.5l6.7-6.7C35.6 2.6 30.2 0 24 0 14.6 0 6.5 5.4 2.6 13.3l7.8 6C12.3 13.6 17.7 9.5 24 9.5z" />

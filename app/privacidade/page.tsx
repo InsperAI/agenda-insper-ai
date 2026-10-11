@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import BrandMark from "@/components/ui/BrandMark";
+import MarcaInsper from "@/components/ui/MarcaInsper";
 
 export const metadata: Metadata = { title: "Privacidade" };
 
@@ -37,9 +37,8 @@ export default function Privacidade() {
   return (
     <main className="flex flex-1 flex-col items-center px-6 py-16">
       <div className="flex w-full max-w-xl flex-col">
-        <BrandMark className="h-10 w-12" />
-        <p className="t-meta mt-6">Insper AI</p>
-        <h1 className="t-h2 mt-2">Política de privacidade</h1>
+        <MarcaInsper className="self-start" />
+        <h1 className="t-h2 mt-8">Política de privacidade</h1>
         <p className="t-apoio mt-3">
           A Agenda Insper AI é uma ferramenta interna da Insper AI para organizar eventos, aulas, reuniões e prazos. Esta página explica quais dados o app usa.
         </p>

@@ -1,5 +1,6 @@
 "use client";
 
+import { AnimatePresence, motion } from "motion/react";
 import { useRouter } from "next/navigation";
 import { useCallback, useMemo, useState } from "react";
 import Aviso from "@/components/ui/Aviso";
@@ -78,10 +79,18 @@ export default function TabelaMembros({ inicial, pedidosIniciais, meuId }: { ini
             <p className="t-apoio">Ninguém ainda.</p>
           ) : (
             <ul className="divide-y divide-ia-regua overflow-hidden rounded-xl border border-ia-regua">
+              <AnimatePresence initial={false}>
               {g.membros.map((m) => {
                 const souEu = m.id === meuId;
                 return (
-                  <li key={m.id} className="flex items-center gap-2 px-4 py-3">
+                  <motion.li
+                    key={m.id}
+                    layout="position"
+                    initial={{ opacity: 0, y: -6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, transition: { duration: 0.15 } }}
+                    className="flex items-center gap-2 px-4 py-3"
+                  >
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-[0.95rem] text-ia-petroleo">
                         {m.name}
@@ -99,9 +108,10 @@ export default function TabelaMembros({ inicial, pedidosIniciais, meuId }: { ini
                     <BotaoIcone rotulo={`Remover ${m.name}`} disabled={souEu || ocupado} onClick={() => setRemovendo(m)} className="hover:!bg-perigo-fundo hover:!text-perigo">
                       <IcoLixeira />
                     </BotaoIcone>
-                  </li>
+                  </motion.li>
                 );
               })}
+              </AnimatePresence>
             </ul>
           )}
         </section>

@@ -1,6 +1,7 @@
 "use client";
 
 import { addDays, addHours, addMonths, addWeeks, setHours } from "date-fns";
+import { AnimatePresence, motion, type Variants } from "motion/react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Aviso from "@/components/ui/Aviso";
 import Botao from "@/components/ui/Botao";
@@ -35,6 +36,13 @@ import VistaSemana from "./VistaSemana";
 type Formulario = { modo: "criar"; inicio?: Date; diaInteiro?: boolean } | { modo: "editar"; occ: Ocorrencia; escopo: Escopo };
 
 const CHAVE_FILTROS = "agenda:filtros";
+
+/** Mês/semana deslizam 24 px no sentido da navegação; troca de vista só esmaece. */
+const TRANSICAO_PERIODO: Variants = {
+  entra: (dir: number) => ({ opacity: 0, x: dir * 24 }),
+  parado: { opacity: 1, x: 0, transition: { duration: 0.24 } },
+  sai: (dir: number) => ({ opacity: 0, x: dir * -24, transition: { duration: 0.12 } }),
+};
 
 function normalizar(s: string): string {
   return s
@@ -164,14 +172,20 @@ export default function Agenda({ vistaInicial, ancoraInicial, podeEditar }: { vi
   }, [ocorrencias, selecionada]);
 
   /* ── Navegação ─────────────────────────────────────────────────────────── */
+  // Sentido da última navegação, para o calendário deslizar do lado certo (0 = só esmaece).
+  const [direcao, setDirecao] = useState(0);
   const navegar = useCallback(
     (delta: number) => {
+      setDirecao(delta);
       if (vista === "mes") setAncora(chaveDia(addMonths(inicioDoMes(dataAncora), delta)));
       else if (vista === "semana") setAncora(chaveDia(addWeeks(inicioDaSemana(dataAncora), delta)));
     },
     [vista, dataAncora],
   );
-  const irHoje = useCallback(() => setAncora(chaveDia(new Date())), []);
+  const irHoje = useCallback(() => {
+    setDirecao(0);
+    setAncora(chaveDia(new Date()));
+  }, []);
 
   const abrirCriar = useCallback((inicio?: Date, diaInteiro?: boolean) => {
     setSelecionada(null);
@@ -194,6 +208,8 @@ export default function Agenda({ vistaInicial, ancoraInicial, podeEditar }: { vi
     return () => window.removeEventListener("keydown", h);
   }, [navegar, irHoje, abrirCriar, podeEditar]);
 
+  // Muda só quando o período visível muda (não ao tocar num dia do mesmo mês/semana).
+  const chavePeriodo = vista === "mes" ? `mes-${chaveDia(inicioDoMes(dataAncora))}` : vista === "semana" ? `semana-${chaveDia(inicioDaSemana(dataAncora))}` : "proximos";
   const titulo = vista === "mes" ? tituloMes(dataAncora) : vista === "semana" ? tituloSemana(inicioDaSemana(dataAncora)) : "Próximos 60 dias";
 
   /* ── Ações ─────────────────────────────────────────────────────────────── */
@@ -299,9 +315,21 @@ export default function Agenda({ vistaInicial, ancoraInicial, podeEditar }: { vi
         </p>
       )}
 
-      {vista === "mes" && <VistaMes ancora={dataAncora} ocorrencias={ocorrencias} hoje={hoje} aoSelecionar={setSelecionada} aoCriarEm={podeEditar ? (dia) => abrirCriar(setHours(dia, 9)) : undefined} />}
-      {vista === "semana" && <VistaSemana ancora={dataAncora} ocorrencias={ocorrencias} hoje={hoje} aoSelecionar={setSelecionada} aoCriarEm={podeEditar ? (inicio) => abrirCriar(inicio) : undefined} />}
-      {vista === "proximos" && <VistaProximos ocorrencias={ocorrencias} carregando={carregando} aoSelecionar={setSelecionada} />}
+      <AnimatePresence mode="wait" initial={false} custom={direcao}>
+        <motion.div
+          key={chavePeriodo}
+          custom={direcao}
+          variants={TRANSICAO_PERIODO}
+          initial="entra"
+          animate="parado"
+          exit="sai"
+          className="flex min-w-0 flex-col"
+        >
+          {vista === "mes" && <VistaMes ancora={dataAncora} ocorrencias={ocorrencias} hoje={hoje} aoSelecionar={setSelecionada} aoCriarEm={podeEditar ? (dia) => abrirCriar(setHours(dia, 9)) : undefined} />}
+          {vista === "semana" && <VistaSemana ancora={dataAncora} ocorrencias={ocorrencias} hoje={hoje} aoSelecionar={setSelecionada} aoCriarEm={podeEditar ? (inicio) => abrirCriar(inicio) : undefined} />}
+          {vista === "proximos" && <VistaProximos ocorrencias={ocorrencias} carregando={carregando} aoSelecionar={setSelecionada} />}
+        </motion.div>
+      </AnimatePresence>
 
       <PainelEvento occ={selecionada} membros={membros} aoFechar={() => setSelecionada(null)} aoEditar={podeEditar ? pedirEditar : undefined} aoExcluir={podeEditar ? pedirExcluir : undefined} />
 

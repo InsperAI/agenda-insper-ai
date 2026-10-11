@@ -65,7 +65,7 @@ export default function MenuUsuario({ membro, temaInicial }: { membro: MembroAtu
         </div>
         <div className="regua mx-1.5" />
         <div className="px-3 py-2.5">
-          <p className="t-meta mb-2">Tema</p>
+          <p className="mb-2 text-[0.8125rem] text-ia-apoio">Tema</p>
           <Segmentado opcoes={OPCOES_TEMA} valor={tema} aoMudar={mudarTema} rotulo="Tema" />
         </div>
         <div className="regua mx-1.5" />

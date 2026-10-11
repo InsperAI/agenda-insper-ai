@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Instrument_Sans, Space_Grotesk } from "next/font/google";
 import { cookies } from "next/headers";
+import ProvedorDeMovimento from "@/components/ui/ProvedorDeMovimento";
 import { atributoTema, COOKIE_TEMA, lerTema } from "@/lib/tema";
 import "./globals.css";
 
@@ -43,7 +44,9 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
   const tema = lerTema((await cookies()).get(COOKIE_TEMA)?.value);
   return (
     <html lang="pt-BR" data-theme={atributoTema(tema)} className={`${spaceGrotesk.variable} ${instrumentSans.variable}`}>
-      <body className="flex min-h-svh flex-col bg-ia-papel">{children}</body>
+      <body className="flex min-h-svh flex-col bg-ia-papel">
+        <ProvedorDeMovimento>{children}</ProvedorDeMovimento>
+      </body>
     </html>
   );
 }
