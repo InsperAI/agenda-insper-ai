@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import BrandMark from "@/components/ui/BrandMark";
 import { destinoSeguro } from "@/lib/url";
 import BotaoGoogle from "./BotaoGoogle";
@@ -30,6 +31,10 @@ export default async function Entrar({ searchParams }: { searchParams: Promise<{
             {ERROS[erro]}
           </p>
         )}
+
+        <Link href="/privacidade" className="t-meta mt-10 underline underline-offset-4 hover:text-ia-petroleo">
+          Privacidade
+        </Link>
       </div>
     </main>
   );
