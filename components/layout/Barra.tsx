@@ -3,11 +3,12 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { MembroAtual } from "@/lib/membro";
+import type { Tema } from "@/lib/tema";
 import BrandMark from "@/components/ui/BrandMark";
 import MenuUsuario from "./MenuUsuario";
 
 /** Barra de 64 px: marca + nome do app à esquerda, links no meio, usuário à direita. */
-export default function Barra({ membro }: { membro: MembroAtual }) {
+export default function Barra({ membro, tema }: { membro: MembroAtual; tema: Tema }) {
   const pathname = usePathname();
   const links = [
     { href: "/agenda", rotulo: "Agenda" },
@@ -42,7 +43,7 @@ export default function Barra({ membro }: { membro: MembroAtual }) {
           })}
         </nav>
 
-        <MenuUsuario membro={membro} />
+        <MenuUsuario membro={membro} temaInicial={tema} />
       </div>
     </header>
   );

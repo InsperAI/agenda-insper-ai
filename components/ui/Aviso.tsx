@@ -20,7 +20,7 @@ export default function Aviso({ mensagem, aoFechar }: { mensagem: string | null;
             type="button"
             onClick={aoFechar}
             aria-label="Fechar aviso"
-            className="inline-flex h-7 w-7 items-center justify-center rounded-full text-ia-ceu-claro hover:bg-white/10 hover:text-white"
+            className="inline-flex h-7 w-7 items-center justify-center rounded-full text-ia-papel/70 hover:bg-ia-papel/10 hover:text-ia-papel"
           >
             <IcoFechar />
           </button>

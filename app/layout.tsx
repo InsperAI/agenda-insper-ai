@@ -1,5 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Instrument_Sans, Space_Grotesk } from "next/font/google";
+import { cookies } from "next/headers";
+import { atributoTema, COOKIE_TEMA, lerTema } from "@/lib/tema";
 import "./globals.css";
 
 // As duas famílias da marca (§03): Space Grotesk só em 600; Instrument Sans 400.
@@ -30,13 +32,17 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#FFFFFF",
-  colorScheme: "light",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#FFFFFF" },
+    { media: "(prefers-color-scheme: dark)", color: "#0A111D" },
+  ],
+  colorScheme: "light dark",
 };
 
-export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+  const tema = lerTema((await cookies()).get(COOKIE_TEMA)?.value);
   return (
-    <html lang="pt-BR" className={`${spaceGrotesk.variable} ${instrumentSans.variable}`}>
+    <html lang="pt-BR" data-theme={atributoTema(tema)} className={`${spaceGrotesk.variable} ${instrumentSans.variable}`}>
       <body className="flex min-h-svh flex-col bg-ia-papel">{children}</body>
     </html>
   );

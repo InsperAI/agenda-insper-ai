@@ -1,7 +1,9 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import Segmentado from "@/components/ui/Segmentado";
 import type { MembroAtual } from "@/lib/membro";
+import { atributoTema, COOKIE_TEMA, OPCOES_TEMA, UM_ANO_EM_SEGUNDOS, type Tema } from "@/lib/tema";
 
 function iniciais(nome: string): string {
   const partes = nome.trim().split(/\s+/).filter(Boolean);
@@ -10,9 +12,23 @@ function iniciais(nome: string): string {
   return (partes[0][0] + partes[partes.length - 1][0]).toUpperCase();
 }
 
-/** Avatar com iniciais; abre um cartão com nome, cargo, e-mail e "Sair". */
-export default function MenuUsuario({ membro }: { membro: MembroAtual }) {
+/** Grava a preferência e aplica na hora, sem recarregar. */
+function aplicarTema(tema: Tema) {
+  document.cookie = `${COOKIE_TEMA}=${tema}; path=/; max-age=${UM_ANO_EM_SEGUNDOS}; samesite=lax`;
+  const attr = atributoTema(tema);
+  if (attr) document.documentElement.dataset.theme = attr;
+  else delete document.documentElement.dataset.theme;
+}
+
+/** Avatar com iniciais; abre um cartão com nome, cargo, e-mail, tema e "Sair". */
+export default function MenuUsuario({ membro, temaInicial }: { membro: MembroAtual; temaInicial: Tema }) {
   const ref = useRef<HTMLDetailsElement>(null);
+  const [tema, setTema] = useState(temaInicial);
+
+  function mudarTema(t: Tema) {
+    setTema(t);
+    aplicarTema(t);
+  }
 
   // Fecha ao clicar fora ou apertar Esc.
   useEffect(() => {
@@ -41,11 +57,16 @@ export default function MenuUsuario({ membro }: { membro: MembroAtual }) {
       >
         {iniciais(membro.name)}
       </summary>
-      <div className="absolute right-0 mt-2 w-64 rounded-xl border border-ia-regua bg-ia-papel p-1.5 shadow-[0_16px_48px_rgba(1,30,66,0.12)]">
+      <div className="absolute right-0 mt-2 w-64 rounded-xl border border-ia-regua bg-ia-papel p-1.5 shadow-pop">
         <div className="px-3 py-2.5">
           <p className="truncate font-display font-semibold text-ia-petroleo">{membro.name}</p>
           {membro.cargo && <p className="truncate text-[0.8125rem] text-ia-apoio">{membro.cargo}</p>}
           <p className="mt-0.5 truncate text-[0.8125rem] text-ia-meta">{membro.email}</p>
+        </div>
+        <div className="regua mx-1.5" />
+        <div className="px-3 py-2.5">
+          <p className="t-meta mb-2">Tema</p>
+          <Segmentado opcoes={OPCOES_TEMA} valor={tema} aoMudar={mudarTema} rotulo="Tema" />
         </div>
         <div className="regua mx-1.5" />
         <form action="/auth/sair" method="post" className="p-1">

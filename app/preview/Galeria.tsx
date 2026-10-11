@@ -163,7 +163,7 @@ export default function Galeria() {
 
   return (
     <>
-      <Barra membro={MEMBROS[0]} />
+      <Barra membro={MEMBROS[0]} tema="sistema" />
       <main className="wrap flex min-w-0 flex-col gap-10 py-6">
         <p className="rounded-lg bg-ia-nevoa px-3 py-2 text-[0.8125rem] text-ia-apoio">
           Galeria de desenvolvimento com dados de exemplo. Não grava nada. Em produção esta rota é 404.

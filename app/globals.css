@@ -6,24 +6,45 @@
    primeiro e copie para cá.
    ═══════════════════════════════════════════════════════════════════════════ */
 
+/* Tema: `light-dark(claro, escuro)` segue `color-scheme`. Sem data-theme no
+   <html>, vale o sistema; com data-theme (cookie `tema`, lib/tema.ts), força. */
 :root {
-  /* tinta e fundo */
-  --ia-petroleo: #011e42;
+  color-scheme: light dark;
+}
+:root[data-theme="light"] {
+  color-scheme: light;
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+}
+
+:root {
+  /* tinta e fundo — no escuro, "petróleo" vira a tinta clara e "papel" o fundo */
+  --ia-petroleo: light-dark(#011e42, #e6edf6);
   --ia-noite: #04070e;
-  --ia-papel: #ffffff;
-  --ia-nevoa: #f1f4f8;
-  --ia-canvas: #e4eaf0;
-  /* azuis — a luz */
-  --ia-cobalto: #0a6cf1;
-  --ia-azul: #2e85ff;
+  --ia-papel: light-dark(#ffffff, #0a111d);
+  --ia-nevoa: light-dark(#f1f4f8, #141d2b);
+  --ia-canvas: light-dark(#e4eaf0, #1b2636);
+  /* azuis — a luz (mais claros no escuro para manter contraste) */
+  --ia-cobalto: light-dark(#0a6cf1, #5b9dff);
+  --ia-azul: light-dark(#2e85ff, #6fa9ff);
   --ia-ceu: #7fc4ff;
   --ia-ceu-claro: #a8dcff;
   /* escala de texto */
-  --ia-corpo: #3a4654;
-  --ia-apoio: #5a6472;
-  --ia-meta: #78889b;
-  --ia-meta-texto: #5f6f82;
-  --ia-regua: #dce3eb;
+  --ia-corpo: light-dark(#3a4654, #c4cdd9);
+  --ia-apoio: light-dark(#5a6472, #a3afbf);
+  --ia-meta: light-dark(#78889b, #7f8da2);
+  --ia-meta-texto: light-dark(#5f6f82, #8f9db1);
+  --ia-regua: light-dark(#dce3eb, #233045);
+  --ia-regua-forte: light-dark(#c5cfdb, #34435c);
+
+  /* superfícies */
+  --barra-fundo: light-dark(rgba(255, 255, 255, 0.72), rgba(10, 17, 29, 0.72));
+  --anel-foco: light-dark(rgba(10, 108, 241, 0.15), rgba(91, 157, 255, 0.3));
+  --sombra-pop: 0 16px 48px light-dark(rgba(1, 30, 66, 0.12), rgba(0, 0, 0, 0.5));
+  --sombra-dialogo: 0 24px 64px light-dark(rgba(1, 30, 66, 0.18), rgba(0, 0, 0, 0.6));
+  --sombra-folha: -16px 0 48px light-dark(rgba(1, 30, 66, 0.12), rgba(0, 0, 0, 0.5));
+  --veu: light-dark(rgba(1, 30, 66, 0.28), rgba(0, 0, 0, 0.6));
   /* marca */
   --ia-marca-a: #2074de;
   --ia-marca-b: #9ac8f4;
@@ -33,7 +54,7 @@
   --ease-ia: cubic-bezier(0.2, 0.7, 0.2, 1);
   --ease-mk: cubic-bezier(0.16, 1, 0.3, 1);
 
-  /* papéis de cor (trocam dentro de `.tom-escuro`, reservado para o futuro) */
+  /* papéis de cor (seguem o tema pelos tokens acima) */
   --tinta: var(--ia-petroleo);
   --texto: var(--ia-corpo);
   --apoio: var(--ia-apoio);
@@ -44,14 +65,15 @@
   --foco: var(--ia-cobalto);
 
   /* ── Categorias da agenda. Única fonte da cor: lib/categorias.ts aponta para cá. ── */
-  --cat-evento: #0a6cf1;   /* Cobalto — público, voltado à marca */
-  --cat-aula: #0b7a5e;     /* Jade — mesma saturação dos azuis */
-  --cat-reuniao: #011e42;  /* Petróleo — interno e frequente, tinta quieta */
-  --cat-prazo: #b45309;    /* Âmbar — quente = atenção */
+  /* No escuro, cada cor sobe de luminosidade (Petróleo sumiria no fundo). */
+  --cat-evento: light-dark(#0a6cf1, #5b9dff);   /* Cobalto — público, voltado à marca */
+  --cat-aula: light-dark(#0b7a5e, #3cbf97);     /* Jade — mesma saturação dos azuis */
+  --cat-reuniao: light-dark(#011e42, #93abcb);  /* Petróleo — interno e frequente, tinta quieta */
+  --cat-prazo: light-dark(#b45309, #f0a04b);    /* Âmbar — quente = atenção */
 
   /* estados */
-  --perigo: #b42318;
-  --perigo-fundo: #fef3f2;
+  --perigo: light-dark(#b42318, #ff8b80);
+  --perigo-fundo: light-dark(#fef3f2, #3a1717);
 }
 
 @theme inline {
@@ -68,6 +90,8 @@
   --color-ia-apoio: var(--ia-apoio);
   --color-ia-meta: var(--ia-meta);
   --color-ia-regua: var(--ia-regua);
+  --color-ia-regua-forte: var(--ia-regua-forte);
+  --shadow-pop: var(--sombra-pop);
 
   --color-tinta: var(--tinta);
   --color-texto: var(--texto);
@@ -229,9 +253,9 @@ select,
   }
 }
 
-/* ═══ Barra: branco a 72% com desfoque de 12 px ═══════════════════════════ */
+/* ═══ Barra: fundo a 72% com desfoque de 12 px ════════════════════════════ */
 .barra {
-  background-color: rgba(255, 255, 255, 0.72);
+  background-color: var(--barra-fundo);
   -webkit-backdrop-filter: blur(12px);
   backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--ia-regua);
@@ -258,12 +282,12 @@ select,
     color: var(--ia-meta);
   }
   .campo:hover {
-    border-color: #c5cfdb;
+    border-color: var(--ia-regua-forte);
   }
   .campo:focus {
     outline: none;
     border-color: var(--enfase);
-    box-shadow: 0 0 0 3px rgba(10, 108, 241, 0.15);
+    box-shadow: 0 0 0 3px var(--anel-foco);
   }
   .campo:disabled {
     background: var(--ia-nevoa);
@@ -282,18 +306,18 @@ select,
   }
 }
 
-/* ═══ Chip de evento: filete de 3 px na cor da categoria + tinta a 10 % ═══ */
+/* ═══ Chip de evento: filete de 3 px na cor da categoria + tinta sobre o fundo ═══ */
 @layer components {
   .chip {
     --cor: var(--ia-cobalto);
     border-left: 3px solid var(--cor);
-    background: color-mix(in srgb, var(--cor) 10%, white);
+    background: color-mix(in srgb, var(--cor) 12%, var(--ia-papel));
     color: var(--tinta);
     transition: background-color 150ms var(--ease-ia);
   }
   .chip:hover,
   .chip:focus-visible {
-    background: color-mix(in srgb, var(--cor) 20%, white);
+    background: color-mix(in srgb, var(--cor) 22%, var(--ia-papel));
   }
   .ponto-cat {
     display: inline-block;
@@ -316,11 +340,11 @@ dialog.dialogo {
   width: min(32rem, calc(100vw - 2rem));
   max-width: none;
   max-height: calc(100svh - 2rem);
-  box-shadow: 0 24px 64px rgba(1, 30, 66, 0.18);
+  box-shadow: var(--sombra-dialogo);
   overflow: hidden;
 }
 dialog.dialogo::backdrop {
-  background: rgba(1, 30, 66, 0.28);
+  background: var(--veu);
 }
 dialog.dialogo[open] {
   animation: dialogo-entra 220ms var(--ease-mk);
@@ -333,7 +357,7 @@ dialog.dialogo.folha {
   border-radius: 0;
   border: 0;
   border-left: 1px solid var(--regua);
-  box-shadow: -16px 0 48px rgba(1, 30, 66, 0.12);
+  box-shadow: var(--sombra-folha);
 }
 dialog.dialogo.folha[open] {
   animation: folha-entra 260ms var(--ease-mk);
