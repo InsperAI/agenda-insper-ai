@@ -6,7 +6,7 @@ import { agoraSP, mesmoDia, sp } from "./fuso";
  *
  *   Data curta     19/08
  *   Período        19/08 — 20/08   (travessão com espaços, nunca hífen)
- *   Hora           19H · 19H30     (caixa-alta, sem espaço)
+ *   Hora           19h · 19h30     (h minúsculo, sem espaço)
  */
 
 export const MESES = [
@@ -22,12 +22,12 @@ export const DIAS_SEMANA_GRADE = ["seg", "ter", "qua", "qui", "sex", "sáb", "do
 const dois = (n: number) => String(n).padStart(2, "0");
 const capitalizar = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
-/** 19H · 19H30 */
+/** 19h · 19h30 */
 export function hora(d: Date): string {
   const t = sp(d);
   const h = t.getHours();
   const m = t.getMinutes();
-  return m ? `${h}H${dois(m)}` : `${h}H`;
+  return m ? `${h}h${dois(m)}` : `${h}h`;
 }
 
 /** 19/08 */
@@ -93,8 +93,8 @@ export function rotuloDia(d: Date, hoje: Date = agoraSP()): string {
  * Faixa de horário de uma ocorrência.
  *   Dia inteiro (um dia)      → "Dia inteiro"
  *   Dia inteiro (vários dias) → "19/08 — 21/08"
- *   Mesmo dia                 → "19H — 20H30"
- *   Vira o dia                → "19/08 19H — 20/08 2H"
+ *   Mesmo dia                 → "19h — 20h30"
+ *   Vira o dia                → "19/08 19h — 20/08 2h"
  */
 export function faixaHorario(inicio: Date, fim: Date, diaInteiro: boolean): string {
   if (diaInteiro) {
@@ -102,11 +102,11 @@ export function faixaHorario(inicio: Date, fim: Date, diaInteiro: boolean): stri
     return mesmoDia(inicio, ultimo) ? "Dia inteiro" : `${dataCurta(inicio)} — ${dataCurta(ultimo)}`;
   }
   const fimMeiaNoiteSeguinte = sp(fim).getHours() === 0 && sp(fim).getMinutes() === 0 && mesmoDia(addDays(sp(fim), -1), inicio);
-  if (mesmoDia(inicio, fim) || fimMeiaNoiteSeguinte) return `${hora(inicio)} — ${fimMeiaNoiteSeguinte ? "24H" : hora(fim)}`;
+  if (mesmoDia(inicio, fim) || fimMeiaNoiteSeguinte) return `${hora(inicio)} — ${fimMeiaNoiteSeguinte ? "24h" : hora(fim)}`;
   return `${dataCurta(inicio)} ${hora(inicio)} — ${dataCurta(fim)} ${hora(fim)}`;
 }
 
-/** Linha completa para o painel: "quarta-feira, 7 de outubro · 19H — 20H30". */
+/** Linha completa para o painel: "quarta-feira, 7 de outubro · 19h — 20h30". */
 export function linhaQuando(inicio: Date, fim: Date, diaInteiro: boolean): string {
   const faixa = faixaHorario(inicio, fim, diaInteiro);
   if (diaInteiro && faixa !== "Dia inteiro") return faixa;
