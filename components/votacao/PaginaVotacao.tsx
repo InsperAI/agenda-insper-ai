@@ -94,7 +94,9 @@ export default function PaginaVotacao({
 
   async function copiarLink() {
     try {
-      await navigator.clipboard.writeText(`${window.location.origin}/disponibilidade/${votacao.id}`);
+      // Link curto com prévia bonita no WhatsApp (0006); antes da migração, o longo.
+      const caminho = votacao.codigo ? `/d/${votacao.codigo}` : `/disponibilidade/${votacao.id}`;
+      await navigator.clipboard.writeText(`${window.location.origin}${caminho}`);
       setAviso("Link copiado. Cole no grupo para todos preencherem.");
     } catch {
       setAviso("Não deu para copiar; copie o endereço da barra do navegador.");

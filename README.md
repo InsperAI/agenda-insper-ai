@@ -26,7 +26,7 @@ Nenhuma das contas existe ainda. A ordem importa: Supabase → Google Cloud → 
 
 ### B. Supabase (supabase.com, plano Free)
 1. **New project** → região `South America (São Paulo)`. Guarde a senha do banco.
-2. **SQL Editor** → cole `supabase/migrations/0001_init.sql` inteiro → **Run**. Depois, uma query nova para cada uma, em ordem: `0002_niveis.sql`, `0003_publico_e_pedidos.sql`, `0004_votacoes.sql` e `0005_diretoria_acompanha.sql` → **Run**. Cada migração roda uma vez só.
+2. **SQL Editor** → cole `supabase/migrations/0001_init.sql` inteiro → **Run**. Depois, uma query nova para cada uma, em ordem: `0002_niveis.sql`, `0003_publico_e_pedidos.sql`, `0004_votacoes.sql`, `0005_diretoria_acompanha.sql` e `0006_link_curto.sql` → **Run**. Cada migração roda uma vez só.
 3. Abra `supabase/seed.sql`, troque o e-mail pelo da **sua conta Google** e o nome, cole no SQL Editor → **Run**. Você é o primeiro admin.
 4. **Project Settings → API**: copie *Project URL*, a chave *anon / publishable* e a chave *service_role / secret* para o `.env.local`.
 5. **Authentication → URL Configuration**:

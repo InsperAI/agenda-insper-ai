@@ -27,6 +27,7 @@ const VOTACAO: VotacaoRow = {
   criado_por: "m1",
   evento_id: null,
   confirmada_em: null,
+  codigo: "k7m2xq4",
   created_at: "",
 };
 

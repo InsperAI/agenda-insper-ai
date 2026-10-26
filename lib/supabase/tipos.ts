@@ -1,5 +1,5 @@
 /**
- * Tipos do banco, escritos à mão para espelhar supabase/migrations/ (0001–0004).
+ * Tipos do banco, escritos à mão para espelhar supabase/migrations/ (0001–0006).
  * Se o esquema mudar, mude a migração primeiro e depois este arquivo.
  */
 
@@ -108,8 +108,13 @@ export type VotacaoRow = {
   criado_por: string | null;
   evento_id: string | null;
   confirmada_em: string | null;
+  /** 7 caracteres para o link curto /d/<codigo> (0006). */
+  codigo: string;
   created_at: string;
 };
+
+/** O que a prévia pública do link mostra (resumo_votacao, sem login). */
+export type ResumoVotacao = { id: string; titulo: string; prazo: string; duracao_min: number; modo: ModoVotacao; confirmada: boolean };
 
 export type RespostaRow = { votacao_id: string; member_id: string; blocos: string[]; updated_at: string };
 
@@ -192,6 +197,7 @@ export type Database = {
       mapa_votacao: { Args: { p_id: string }; Returns: MapaVotacao };
       pendencias_votacao: { Args: Record<PropertyKey, never>; Returns: { responder: number; resultados: number } };
       confirmar_votacao: { Args: { p_id: string; p_inicio: string; p_freq: Frequencia | null; p_until: string | null }; Returns: string };
+      resumo_votacao: { Args: { p_codigo: string }; Returns: ResumoVotacao[] };
       reabrir_votacao: { Args: { p_id: string; p_prazo: string; p_dias: string[] | null }; Returns: undefined };
     };
     Enums: { categoria: Categoria; frequencia: Frequencia; nivel: Nivel; modo_votacao: ModoVotacao };
