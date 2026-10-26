@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import PaginaVotacao from "@/components/votacao/PaginaVotacao";
 import { obterMembroAtual } from "@/lib/membro";
+import { podeEditar } from "@/lib/niveis";
 import { supabaseServidor } from "@/lib/supabase/server";
 import type { RespostaRow } from "@/lib/supabase/tipos";
 import { aceitaRespostas, statusVotacao } from "@/lib/votacao";
@@ -21,23 +22,34 @@ export default async function PaginaVotacaoRota({ params }: { params: Promise<{ 
   if (!votacao) return <NaoEncontrada />;
 
   const souCriador = votacao.criado_por === membro.id;
+  // A diretoria acompanha todos os pedidos (0005); só quem criou decide.
+  const acompanha = souCriador || podeEditar(membro.nivel);
   const [{ data: mapa }, { data: respostas }, { data: convidados }] = await Promise.all([
     supabase.rpc("mapa_votacao", { p_id: id }),
-    // Para quem abriu, a RLS devolve todas; para os outros, só a própria.
+    // Para quem acompanha, a RLS devolve todas; para os outros, só a própria.
     supabase.from("votacao_respostas").select("*").eq("votacao_id", id),
-    souCriador ? supabase.from("votacao_convidados").select("member_id").eq("votacao_id", id) : Promise.resolve({ data: null }),
+    // Idem: quem acompanha vê todos os convidados; os outros, só a própria linha.
+    supabase.from("votacao_convidados").select("member_id").eq("votacao_id", id),
   ]);
+  const souConvidado = (convidados ?? []).some((c) => c.member_id === membro.id);
 
   const mapaOk = mapa ?? { total: 0, respondidos: 0, contagem: {} };
   const minha = (respostas ?? []).find((r) => r.member_id === membro.id) ?? null;
   const agora = new Date();
   const aceita = aceitaRespostas(votacao, agora.getTime());
 
-  let criador: { respostas: RespostaRow[]; convidados: { id: string; name: string }[] } | null = null;
-  if (souCriador) {
-    const ids = (convidados ?? []).map((c) => c.member_id);
+  let painel: { respostas: RespostaRow[]; convidados: { id: string; name: string }[]; podeDecidir: boolean; pedidoPor: string | null } | null = null;
+  if (acompanha) {
+    const ids = [...(convidados ?? []).map((c) => c.member_id), ...(votacao.criado_por ? [votacao.criado_por] : [])];
     const { data: pessoas } = await supabase.from("members").select("id,name").in("id", ids).order("name");
-    criador = { respostas: respostas ?? [], convidados: pessoas ?? [] };
+    const lista = pessoas ?? [];
+    const convidadosIds = new Set((convidados ?? []).map((c) => c.member_id));
+    painel = {
+      respostas: respostas ?? [],
+      convidados: lista.filter((p) => convidadosIds.has(p.id)),
+      podeDecidir: souCriador,
+      pedidoPor: souCriador ? null : (lista.find((p) => p.id === votacao.criado_por)?.name ?? "alguém da diretoria"),
+    };
   }
 
   return (
@@ -46,9 +58,10 @@ export default async function PaginaVotacaoRota({ params }: { params: Promise<{ 
         votacao={votacao}
         status={statusVotacao(votacao, mapaOk.respondidos, mapaOk.total, agora)}
         aceita={aceita}
+        podeResponder={souConvidado}
         minhaResposta={minha?.blocos ?? null}
         mapaInicial={mapaOk}
-        criador={criador}
+        painel={painel}
       />
     </div>
   );

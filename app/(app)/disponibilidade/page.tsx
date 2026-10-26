@@ -11,22 +11,35 @@ import { aceitaRespostas, rotuloDuracao } from "@/lib/votacao";
 
 export const metadata: Metadata = { title: "Disponibilidade" };
 
-/** Pedidos de disponibilidade em que estou (convidado ou quem pediu). A RLS já filtra. */
+/**
+ * Pedidos de disponibilidade. A RLS já filtra: cada um vê aqueles em que foi
+ * convidado ou que criou; a diretoria vê todos (0005) e ganha a seção
+ * "Aguardando disponibilidade" com o andamento de cada pedido em aberto.
+ */
 export default async function PaginaVotacoes() {
   const { membro } = await obterMembroAtual();
   if (!membro) return null;
+  const diretoria = podeEditar(membro.nivel);
 
   const supabase = await supabaseServidor();
-  const [{ data: votacoes }, { data: minhas }] = await Promise.all([
+  const [{ data: votacoes }, { data: convites }, { data: respostas }] = await Promise.all([
     supabase.from("votacoes").select("*").order("created_at", { ascending: false }),
-    supabase.from("votacao_respostas").select("votacao_id").eq("member_id", membro.id),
+    // Para a diretoria, a RLS devolve todos os convites e respostas; para os outros, só os próprios.
+    supabase.from("votacao_convidados").select("votacao_id,member_id"),
+    supabase.from("votacao_respostas").select("votacao_id,member_id"),
   ]);
 
-  const respondidas = new Set((minhas ?? []).map((r) => r.votacao_id));
+  const meus = (linhas: { votacao_id: string; member_id: string }[] | null) =>
+    new Set((linhas ?? []).filter((l) => l.member_id === membro.id).map((l) => l.votacao_id));
+  const convidado = meus(convites);
+  const respondidas = meus(respostas);
   const agora = new Date().getTime();
   const lista = votacoes ?? [];
-  const pendentes = lista.filter((v) => aceitaRespostas(v, agora) && !respondidas.has(v.id));
-  const demais = lista.filter((v) => !pendentes.includes(v));
+  const abertas = lista.filter((v) => aceitaRespostas(v, agora));
+  const pendentes = abertas.filter((v) => convidado.has(v.id) && !respondidas.has(v.id));
+  const aguardando = diretoria ? abertas.filter((v) => !pendentes.includes(v)) : [];
+  const demais = lista.filter((v) => !pendentes.includes(v) && !aguardando.includes(v));
+  const andamento = diretoria ? await descreverAndamento(lista, convites ?? [], respostas ?? [], membro.id) : new Map<string, string>();
 
   return (
     <div className="wrap-estreito flex flex-col gap-8">
@@ -44,13 +57,34 @@ export default async function PaginaVotacoes() {
 
       {lista.length === 0 && <p className="t-apoio">Nenhum pedido de disponibilidade por aqui ainda.</p>}
 
-      {pendentes.length > 0 && <Lista titulo={`Esperando sua resposta · ${pendentes.length}`} votacoes={pendentes} respondidas={respondidas} meuId={membro.id} agora={agora} />}
-      {demais.length > 0 && <Lista titulo="Outras" votacoes={demais} respondidas={respondidas} meuId={membro.id} agora={agora} />}
+      {pendentes.length > 0 && (
+        <Lista titulo={`Esperando sua resposta · ${pendentes.length}`} votacoes={pendentes} respondidas={respondidas} andamento={andamento} meuId={membro.id} agora={agora} />
+      )}
+      {aguardando.length > 0 && (
+        <Lista titulo={`Aguardando disponibilidade · ${aguardando.length}`} votacoes={aguardando} respondidas={respondidas} andamento={andamento} meuId={membro.id} agora={agora} />
+      )}
+      {demais.length > 0 && (
+        <Lista titulo={diretoria ? "Encerrados" : "Outras"} votacoes={demais} respondidas={respondidas} andamento={andamento} meuId={membro.id} agora={agora} />
+      )}
     </div>
   );
 }
 
-function Lista({ titulo, votacoes, respondidas, meuId, agora }: { titulo: string; votacoes: VotacaoRow[]; respondidas: Set<string>; meuId: string; agora: number }) {
+function Lista({
+  titulo,
+  votacoes,
+  respondidas,
+  andamento,
+  meuId,
+  agora,
+}: {
+  titulo: string;
+  votacoes: VotacaoRow[];
+  respondidas: Set<string>;
+  andamento: Map<string, string>;
+  meuId: string;
+  agora: number;
+}) {
   return (
     <section className="flex flex-col gap-2">
       <h2 className="t-meta">{titulo}</h2>
@@ -65,6 +99,7 @@ function Lista({ titulo, votacoes, respondidas, meuId, agora }: { titulo: string
                 </p>
                 <p className="truncate text-[0.8125rem] text-ia-apoio">
                   {rotuloDuracao(v.duracao_min)} · {v.modo === "recorrente" ? "recorrente" : "data única"} · {situacao(v, agora)}
+                  {andamento.has(v.id) && ` · ${andamento.get(v.id)}`}
                 </p>
               </div>
               {respondidas.has(v.id) && (
@@ -84,4 +119,26 @@ function situacao(v: VotacaoRow, agora: number): string {
   if (v.confirmada_em) return "confirmada";
   if (Date.parse(v.prazo) <= agora) return "prazo encerrado";
   return `até ${dataHoraCurta(new Date(v.prazo))}`;
+}
+
+/** "pedido por Ana · 3 de 7 responderam", para a diretoria acompanhar. */
+async function descreverAndamento(
+  votacoes: VotacaoRow[],
+  convites: { votacao_id: string }[],
+  respostas: { votacao_id: string }[],
+  meuId: string,
+): Promise<Map<string, string>> {
+  const contar = (linhas: { votacao_id: string }[]) => linhas.reduce((m, l) => m.set(l.votacao_id, (m.get(l.votacao_id) ?? 0) + 1), new Map<string, number>());
+  const total = contar(convites);
+  const responderam = contar(respostas);
+  const criadores = [...new Set(votacoes.map((v) => v.criado_por).filter((id): id is string => !!id && id !== meuId))];
+  const supabase = await supabaseServidor();
+  const { data: pessoas } = criadores.length ? await supabase.from("members").select("id,name").in("id", criadores) : { data: [] };
+  const nomes = new Map((pessoas ?? []).map((p) => [p.id, p.name]));
+  return new Map(
+    votacoes.map((v) => {
+      const quem = v.criado_por && v.criado_por !== meuId ? `pedido por ${nomes.get(v.criado_por) ?? "alguém"} · ` : "";
+      return [v.id, `${quem}${responderam.get(v.id) ?? 0} de ${total.get(v.id) ?? 0} responderam`];
+    }),
+  );
 }

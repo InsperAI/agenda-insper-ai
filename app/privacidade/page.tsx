@@ -9,7 +9,7 @@ const SECOES: { titulo: string; texto: string }[] = [
   {
     titulo: "O que guardamos",
     texto:
-      "Ao entrar com o Google, recebemos apenas seu nome, e-mail e foto de perfil (escopos openid, email e profile). Na lista de membros guardamos nome, e-mail, cargo e nível de acesso. Se você pedir acesso, guardamos o nome, o e-mail, o cargo e o nível do pedido até um admin aprovar ou recusar; recusado ou cancelado, o pedido é apagado. Nos eventos registramos quem criou e quem alterou cada um. Nos pedidos de disponibilidade, guardamos os horários que você marcou; os outros convidados só veem quantas pessoas podem em cada horário, e só quem fez o pedido vê quem marcou o quê.",
+      "Ao entrar com o Google, recebemos apenas seu nome, e-mail e foto de perfil (escopos openid, email e profile). Na lista de membros guardamos nome, e-mail, cargo e nível de acesso. Se você pedir acesso, guardamos o nome, o e-mail, o cargo e o nível do pedido até um admin aprovar ou recusar; recusado ou cancelado, o pedido é apagado. Nos eventos registramos quem criou e quem alterou cada um. Nos pedidos de disponibilidade, guardamos os horários que você marcou; os outros convidados só veem quantas pessoas podem em cada horário; quem marcou o quê só a diretoria vê.",
   },
   {
     titulo: "Para que usamos",

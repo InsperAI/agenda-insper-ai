@@ -30,23 +30,27 @@ export default function PaginaVotacao({
   votacao,
   status,
   aceita,
+  podeResponder,
   minhaResposta,
   mapaInicial,
-  criador,
+  painel,
 }: {
   votacao: VotacaoRow;
   status: StatusVotacao;
   aceita: boolean;
+  /** Só convidados marcam horários; a diretoria que só acompanha vê sem marcar. */
+  podeResponder: boolean;
   minhaResposta: string[] | null;
   mapaInicial: MapaVotacao;
-  /** Só para quem abriu: respostas com nomes. */
-  criador: { respostas: RespostaRow[]; convidados: { id: string; name: string }[] } | null;
+  /** Para quem criou e para a diretoria: respostas com nomes. Só quem criou decide. */
+  painel: { respostas: RespostaRow[]; convidados: { id: string; name: string }[]; podeDecidir: boolean; pedidoPor: string | null } | null;
 }) {
+  const editavel = aceita && podeResponder;
   const sb = useMemo(() => supabaseNavegador(), []);
   const router = useRouter();
   const [minhas, setMinhas] = useState<Set<string>>(() => new Set(minhaResposta ?? []));
   const [mapa, setMapa] = useState(mapaInicial);
-  const [vista, setVista] = useState<Vista>(aceita ? "minha" : "todos");
+  const [vista, setVista] = useState<Vista>(aceita && podeResponder ? "minha" : "todos");
   const [salvo, setSalvo] = useState<"salvo" | "salvando" | null>(minhaResposta ? "salvo" : null);
   const [aviso, setAviso] = useState<string | null>(null);
   const fecharAviso = useCallback(() => setAviso(null), []);
@@ -118,13 +122,26 @@ export default function PaginaVotacao({
         <FaixaStatus status={status} aceita={aceita} prazo={votacao.prazo} />
       </header>
 
-      {criador && <ResultadoVotacao votacao={votacao} respostas={criador.respostas} convidados={criador.convidados} aoAvisar={setAviso} />}
+      {painel && (
+        <ResultadoVotacao
+          votacao={votacao}
+          respostas={painel.respostas}
+          convidados={painel.convidados}
+          podeDecidir={painel.podeDecidir}
+          pedidoPor={painel.pedidoPor}
+          aoAvisar={setAviso}
+        />
+      )}
 
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <Segmentado opcoes={VISTAS} valor={vista} aoMudar={setVista} rotulo="O que mostrar na grade" />
+        {podeResponder ? (
+          <Segmentado opcoes={VISTAS} valor={vista} aoMudar={setVista} rotulo="O que mostrar na grade" />
+        ) : (
+          <p className="text-[0.875rem] text-ia-apoio">Você acompanha este pedido, mas não está entre os convidados.</p>
+        )}
         <p className="text-[0.8125rem] text-ia-meta" aria-live="polite">
           {vista === "minha"
-            ? aceita
+            ? editavel
               ? salvo === "salvando"
                 ? "Salvando…"
                 : salvo === "salvo"
@@ -142,7 +159,7 @@ export default function PaginaVotacao({
         contagem={mapa.contagem}
         total={mapa.total}
         vista={vista}
-        editavel={aceita}
+        editavel={editavel}
         aoMudar={mudar}
       />
 

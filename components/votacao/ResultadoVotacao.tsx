@@ -20,11 +20,17 @@ export default function ResultadoVotacao({
   votacao,
   respostas,
   convidados,
+  podeDecidir = true,
+  pedidoPor = null,
   aoAvisar,
 }: {
   votacao: VotacaoRow;
   respostas: RespostaRow[];
   convidados: Pessoa[];
+  /** Confirmar, reabrir e excluir: só quem criou. O resto da diretoria só acompanha. */
+  podeDecidir?: boolean;
+  /** Nome de quem criou, quando quem vê é outra pessoa da diretoria. */
+  pedidoPor?: string | null;
   aoAvisar: (msg: string) => void;
 }) {
   const sb = useMemo(() => supabaseNavegador(), []);
@@ -65,6 +71,7 @@ export default function ResultadoVotacao({
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         <h2 className="font-display font-semibold text-ia-petroleo">Resultado</h2>
         <p className="text-[0.8125rem] text-ia-apoio">
+          {pedidoPor && `Pedido por ${pedidoPor} · `}
           {responderam.size} de {convidados.length} responderam
         </p>
       </div>
@@ -104,25 +111,31 @@ export default function ResultadoVotacao({
                       <p className="text-[0.8125rem] text-ia-apoio">Não podem: {f.naoPodem.map((id) => nomes.get(id) ?? "alguém").join(", ")}</p>
                     )}
                   </div>
-                  <Botao variante="primario" tamanho="sm" onClick={() => setEscolhida(f)}>
-                    Confirmar
-                  </Botao>
+                  {podeDecidir && (
+                    <Botao variante="primario" tamanho="sm" onClick={() => setEscolhida(f)}>
+                      Confirmar
+                    </Botao>
+                  )}
                 </li>
               ))}
             </ul>
           </div>
         ))}
 
-      <div className="flex flex-wrap justify-end gap-2">
-        <Botao variante="fantasma" tamanho="sm" onClick={() => setExcluindo(true)}>
-          Excluir pedido
-        </Botao>
-        {!confirmada && (
-          <Botao tamanho="sm" onClick={() => setReabrindo(true)}>
-            Reabrir / estender prazo
+      {podeDecidir ? (
+        <div className="flex flex-wrap justify-end gap-2">
+          <Botao variante="fantasma" tamanho="sm" onClick={() => setExcluindo(true)}>
+            Excluir pedido
           </Botao>
-        )}
-      </div>
+          {!confirmada && (
+            <Botao tamanho="sm" onClick={() => setReabrindo(true)}>
+              Reabrir / estender prazo
+            </Botao>
+          )}
+        </div>
+      ) : (
+        !confirmada && <p className="text-[0.8125rem] text-ia-meta">Só {pedidoPor ?? "quem fez o pedido"} pode confirmar o horário.</p>
+      )}
 
       {escolhida && (
         <DialogoConfirmar faixa={escolhida} modo={votacao.modo} duracaoMin={votacao.duracao_min} salvando={ocupado} aoFechar={() => setEscolhida(null)} aoConfirmar={confirmar} />
