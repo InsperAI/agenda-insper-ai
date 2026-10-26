@@ -30,7 +30,7 @@ const VOTACAO: VotacaoRow = {
   created_at: "",
 };
 
-/** Votação com dados de exemplo: grade editável, mapa de calor e painel de resultado. */
+/** Pedido de disponibilidade com dados de exemplo: grade editável, mapa de calor e painel de resultado. */
 export default function GaleriaVotacao() {
   const [minhas, setMinhas] = useState<Set<string>>(() => new Set(RESPOSTAS[0].blocos));
   const contagem: Record<string, number> = {};
@@ -38,7 +38,7 @@ export default function GaleriaVotacao() {
 
   return (
     <section className="flex flex-col gap-4">
-      <h2 className="t-h3">Votação de horário</h2>
+      <h2 className="t-h3">Pedido de disponibilidade</h2>
       <ResultadoVotacao
         votacao={VOTACAO}
         respostas={RESPOSTAS}

@@ -56,7 +56,7 @@ Para adicionar as pessoas: mande o link do site; quem não está cadastrado cai 
 |---|---|
 | Esquema, triggers de auditoria, RLS | `supabase/migrations/0001_init.sql` |
 | Níveis (diretoria/membro/trainee) | `supabase/migrations/0002_niveis.sql`, `lib/niveis.ts` |
-| Votações de horário (estilo when2meet) e convidados individuais em eventos | `supabase/migrations/0004_votacoes.sql`, `lib/votacao.ts`, `components/votacao/` |
+| Pedidos de disponibilidade (estilo when2meet; no código e no banco, `votacao`) e convidados individuais em eventos | `supabase/migrations/0004_votacoes.sql`, `lib/votacao.ts`, `components/votacao/` |
 | Público por evento (`publico`) e pedidos de acesso | `supabase/migrations/0003_publico_e_pedidos.sql`, `app/sem-acesso/`, `components/admin/PedidosAcesso.tsx` |
 | Tema claro/escuro (`light-dark()` + cookie `tema`) | `app/globals.css`, `lib/tema.ts` |
 | Portão de membro (logado mas fora da lista → `/sem-acesso`) | `app/(app)/layout.tsx`, `proxy.ts` |

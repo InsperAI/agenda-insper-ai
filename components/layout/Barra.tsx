@@ -12,7 +12,7 @@ export default function Barra({ membro, tema, pedidos = 0, votacoes = 0 }: { mem
   const pathname = usePathname();
   const links: { href: string; rotulo: string; contador?: number }[] = [
     { href: "/agenda", rotulo: "Agenda" },
-    { href: "/votacoes", rotulo: "Votações", contador: votacoes },
+    { href: "/disponibilidade", rotulo: "Disponibilidade", contador: votacoes },
     { href: "/assinar", rotulo: "Assinar" },
     ...(membro.is_admin ? [{ href: "/admin", rotulo: "Membros", contador: pedidos }] : []),
   ];

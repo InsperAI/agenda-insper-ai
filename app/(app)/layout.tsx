@@ -33,7 +33,7 @@ async function contarPedidos(): Promise<number> {
   return count ?? 0;
 }
 
-/** Votações a responder + resultados prontos de quem abriu, para "Votações · N". */
+/** Pedidos de disponibilidade a responder + resultados prontos de quem pediu, para o contador. */
 async function contarVotacoes(): Promise<number> {
   const supabase = await supabaseServidor();
   const { data } = await supabase.rpc("pendencias_votacao");

@@ -12,7 +12,7 @@ import { agoraSP, chaveDia, deChaveDia, deInputDataHora, inicioDaSemana, paraInp
 import { NIVEIS } from "@/lib/niveis";
 import { supabaseNavegador } from "@/lib/supabase/client";
 import type { ModoVotacao, Nivel } from "@/lib/supabase/tipos";
-import { DIAS_DA_SEMANA, diasDaSemana, rotuloDuracao } from "@/lib/votacao";
+import { DIAS_DA_SEMANA, diasDaSemana, rotuloDuracao, traduzirErroVotacao } from "@/lib/votacao";
 
 type Pessoa = { id: string; name: string; nivel: Nivel };
 
@@ -24,7 +24,7 @@ const DURACOES = [30, 60, 90, 120, 150, 180, 240];
 const DIAS_UTEIS = ["1", "2", "3", "4", "5"];
 const PRAZO_PADRAO_DIAS = 3;
 
-/** Abre uma votação (criar_votacao): dias, duração, prazo e quem é convidado. */
+/** Cria um pedido de disponibilidade (criar_votacao): dias, duração, prazo e convidados. */
 export default function FormNovaVotacao({ pessoas, meuId }: { pessoas: Pessoa[]; meuId: string }) {
   const sb = useMemo(() => supabaseNavegador(), []);
   const router = useRouter();
@@ -64,7 +64,7 @@ export default function FormNovaVotacao({ pessoas, meuId }: { pessoas: Pessoa[];
 
   async function enviar(e: FormEvent) {
     e.preventDefault();
-    if (!titulo.trim()) return setErro("Dê um título à votação.");
+    if (!titulo.trim()) return setErro("Dê um título ao pedido.");
     if (dias.length === 0) return setErro("Escolha pelo menos um dia.");
     const prazoData = deInputDataHora(prazo);
     if (Number.isNaN(prazoData.getTime()) || prazoData.getTime() <= new Date().getTime()) return setErro("O prazo precisa ser no futuro.");
@@ -84,8 +84,8 @@ export default function FormNovaVotacao({ pessoas, meuId }: { pessoas: Pessoa[];
       p_excluir: [...excluir],
     });
     setOcupado(false);
-    if (error || !data) return setErro(error?.message ?? "Não foi possível abrir a votação.");
-    router.push(`/votacoes/${data}`);
+    if (error || !data) return setErro(error ? traduzirErroVotacao(error.message) : "Não foi possível criar o pedido.");
+    router.push(`/disponibilidade/${data}`);
   }
 
   return (
@@ -99,7 +99,7 @@ export default function FormNovaVotacao({ pessoas, meuId }: { pessoas: Pessoa[];
 
       <div className="flex flex-col gap-1.5">
         <span className="text-[0.8125rem] text-ia-apoio">Tipo</span>
-        <Segmentado opcoes={MODOS} valor={modo} aoMudar={setModo} rotulo="Tipo de votação" className="self-start" />
+        <Segmentado opcoes={MODOS} valor={modo} aoMudar={setModo} rotulo="Tipo de pedido" className="self-start" />
         <p className="text-[0.8125rem] text-ia-meta">
           {modo === "unica" ? "Para uma reunião numa semana específica." : "Para algo que se repete (ex.: aula semanal): vota-se o dia da semana e o horário."}
         </p>
@@ -188,7 +188,7 @@ export default function FormNovaVotacao({ pessoas, meuId }: { pessoas: Pessoa[];
       )}
       <div className="flex justify-end">
         <Botao variante="primario" type="submit" disabled={ocupado}>
-          {ocupado ? "Abrindo…" : "Abrir votação"}
+          {ocupado ? "Criando…" : "Pedir disponibilidade"}
         </Botao>
       </div>
     </form>

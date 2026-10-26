@@ -4,7 +4,7 @@ import { chaveDia, deChaveDia, sp } from "./fuso";
 import type { ModoVotacao, VotacaoRow } from "./supabase/tipos";
 
 /**
- * Votações de horário (supabase/migrations/0004_votacoes.sql). Puro e testável.
+ * Pedidos de disponibilidade — no código e no banco, "votação" (supabase/migrations/0004_votacoes.sql). Puro e testável.
  * Grade fixa: blocos de 30 min das 8h às 21h. Chave de bloco "<dia>|<bloco>",
  * com dia = 'AAAA-MM-DD' (única) ou '1'..'7' (recorrente, 1 = segunda).
  */
@@ -126,4 +126,24 @@ function agrupar(inicios: { dia: string; inicio: number; podem: string[] }[], n:
     else faixas.push({ dia: i.dia, inicio: i.inicio, fim: i.inicio + n, podem: i.podem });
   }
   return faixas;
+}
+
+/**
+ * O banco (0004) fala em "votação"; a interface chama de "pedido de disponibilidade".
+ * Traduz as mensagens do `raise exception` sem precisar de outra migração.
+ */
+const ERROS_DO_BANCO: Record<string, string> = {
+  "Só a diretoria abre votações.": "Só a diretoria pede disponibilidade.",
+  "Você não participa desta votação.": "Você não está entre os convidados deste pedido.",
+  "Bloco inválido para esta votação.": "Horário inválido para este pedido.",
+  "Esta votação já foi confirmada.": "Este pedido já foi confirmado.",
+  "Horário fora da grade da votação.": "Horário fora da grade do pedido.",
+  "Esse dia não faz parte da votação.": "Esse dia não faz parte do pedido.",
+  "Repetição inválida para este tipo de votação.": "Repetição inválida para este tipo de pedido.",
+  "Só quem abriu a votação (e ainda é da diretoria) pode confirmar.": "Só quem fez o pedido (e ainda é da diretoria) pode confirmar.",
+  "Só quem abriu a votação (e ainda é da diretoria) pode reabrir.": "Só quem fez o pedido (e ainda é da diretoria) pode reabrir.",
+};
+
+export function traduzirErroVotacao(mensagem: string): string {
+  return ERROS_DO_BANCO[mensagem] ?? mensagem;
 }

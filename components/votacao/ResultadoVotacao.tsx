@@ -10,7 +10,7 @@ import { IcoChecar } from "@/components/ui/Icones";
 import { agoraSP, deInputDataHora, paraInputDataHora } from "@/lib/fuso";
 import { supabaseNavegador } from "@/lib/supabase/client";
 import type { RespostaRow, VotacaoRow } from "@/lib/supabase/tipos";
-import { melhoresHorarios, rotuloBloco, rotuloDia, rotuloDuracao, type Faixa } from "@/lib/votacao";
+import { melhoresHorarios, rotuloBloco, rotuloDia, rotuloDuracao, traduzirErroVotacao, type Faixa } from "@/lib/votacao";
 import DialogoConfirmar, { type Confirmacao } from "./DialogoConfirmar";
 
 type Pessoa = { id: string; name: string };
@@ -46,7 +46,7 @@ export default function ResultadoVotacao({
     setOcupado(true);
     const { error } = await sb.rpc("confirmar_votacao", { p_id: votacao.id, p_inicio: c.inicio.toISOString(), p_freq: c.freq, p_until: c.until });
     setOcupado(false);
-    if (error) return aoAvisar(error.message);
+    if (error) return aoAvisar(traduzirErroVotacao(error.message));
     setEscolhida(null);
     aoAvisar("Confirmado! O evento já está na agenda dos convidados.");
     router.refresh();
@@ -56,8 +56,8 @@ export default function ResultadoVotacao({
     setOcupado(true);
     const { error } = await sb.from("votacoes").delete().eq("id", votacao.id);
     setOcupado(false);
-    if (error) return aoAvisar(error.message);
-    router.push("/votacoes");
+    if (error) return aoAvisar(traduzirErroVotacao(error.message));
+    router.push("/disponibilidade");
   }
 
   return (
@@ -115,7 +115,7 @@ export default function ResultadoVotacao({
 
       <div className="flex flex-wrap justify-end gap-2">
         <Botao variante="fantasma" tamanho="sm" onClick={() => setExcluindo(true)}>
-          Excluir votação
+          Excluir pedido
         </Botao>
         {!confirmada && (
           <Botao tamanho="sm" onClick={() => setReabrindo(true)}>
@@ -131,7 +131,7 @@ export default function ResultadoVotacao({
       <Dialogo
         aberto={excluindo}
         aoFechar={() => setExcluindo(false)}
-        titulo="Excluir votação"
+        titulo="Excluir pedido"
         rodape={
           <>
             <Botao variante="fantasma" onClick={() => setExcluindo(false)}>
@@ -161,9 +161,9 @@ function DialogoReabrir({ votacaoId, aoFechar, aoAvisar }: { votacaoId: string; 
     setOcupado(true);
     const { error } = await sb.rpc("reabrir_votacao", { p_id: votacaoId, p_prazo: deInputDataHora(prazo).toISOString(), p_dias: null });
     setOcupado(false);
-    if (error) return aoAvisar(error.message);
+    if (error) return aoAvisar(traduzirErroVotacao(error.message));
     aoFechar();
-    aoAvisar("Votação reaberta. Mande o link de novo no grupo.");
+    aoAvisar("Pedido reaberto. Mande o link de novo no grupo.");
     router.refresh();
   }
 
@@ -171,7 +171,7 @@ function DialogoReabrir({ votacaoId, aoFechar, aoAvisar }: { votacaoId: string; 
     <Dialogo
       aberto
       aoFechar={aoFechar}
-      titulo="Reabrir votação"
+      titulo="Reabrir pedido"
       rodape={
         <>
           <Botao variante="fantasma" onClick={aoFechar}>

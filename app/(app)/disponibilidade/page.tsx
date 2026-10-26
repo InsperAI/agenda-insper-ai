@@ -9,9 +9,9 @@ import { supabaseServidor } from "@/lib/supabase/server";
 import type { VotacaoRow } from "@/lib/supabase/tipos";
 import { aceitaRespostas, rotuloDuracao } from "@/lib/votacao";
 
-export const metadata: Metadata = { title: "Votações" };
+export const metadata: Metadata = { title: "Disponibilidade" };
 
-/** Votações em que estou (convidado ou quem abriu). A RLS já filtra. */
+/** Pedidos de disponibilidade em que estou (convidado ou quem pediu). A RLS já filtra. */
 export default async function PaginaVotacoes() {
   const { membro } = await obterMembroAtual();
   if (!membro) return null;
@@ -32,17 +32,17 @@ export default async function PaginaVotacoes() {
     <div className="wrap-estreito flex flex-col gap-8">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="t-h2">Votações</h1>
-          <p className="t-apoio mt-2">Marque os horários em que você pode. Quem abriu a votação escolhe o melhor e ele entra direto na agenda.</p>
+          <h1 className="t-h2">Disponibilidade</h1>
+          <p className="t-apoio mt-2">Marque os horários em que você pode. Quem fez o pedido escolhe o melhor e ele entra direto na agenda.</p>
         </div>
         {podeEditar(membro.nivel) && (
-          <BotaoLink href="/votacoes/nova" variante="primario">
-            <IcoMais /> Nova votação
+          <BotaoLink href="/disponibilidade/nova" variante="primario">
+            <IcoMais /> Pedir disponibilidade
           </BotaoLink>
         )}
       </div>
 
-      {lista.length === 0 && <p className="t-apoio">Nenhuma votação por aqui ainda.</p>}
+      {lista.length === 0 && <p className="t-apoio">Nenhum pedido de disponibilidade por aqui ainda.</p>}
 
       {pendentes.length > 0 && <Lista titulo={`Esperando sua resposta · ${pendentes.length}`} votacoes={pendentes} respondidas={respondidas} meuId={membro.id} agora={agora} />}
       {demais.length > 0 && <Lista titulo="Outras" votacoes={demais} respondidas={respondidas} meuId={membro.id} agora={agora} />}
@@ -57,11 +57,11 @@ function Lista({ titulo, votacoes, respondidas, meuId, agora }: { titulo: string
       <ul className="divide-y divide-ia-regua overflow-hidden rounded-xl border border-ia-regua">
         {votacoes.map((v) => (
           <li key={v.id}>
-            <Link href={`/votacoes/${v.id}`} className="flex items-center gap-3 px-4 py-3 transition-colors hover:bg-ia-nevoa">
+            <Link href={`/disponibilidade/${v.id}`} className="flex items-center gap-3 px-4 py-3 transition-colors hover:bg-ia-nevoa">
               <div className="min-w-0 flex-1">
                 <p className="truncate text-[0.95rem] text-ia-petroleo">
                   {v.titulo}
-                  {v.criado_por === meuId && <span className="ml-2 rounded-full bg-ia-nevoa px-2 py-0.5 text-[0.7rem] text-ia-apoio">você abriu</span>}
+                  {v.criado_por === meuId && <span className="ml-2 rounded-full bg-ia-nevoa px-2 py-0.5 text-[0.7rem] text-ia-apoio">você pediu</span>}
                 </p>
                 <p className="truncate text-[0.8125rem] text-ia-apoio">
                   {rotuloDuracao(v.duracao_min)} · {v.modo === "recorrente" ? "recorrente" : "data única"} · {situacao(v, agora)}

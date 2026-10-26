@@ -13,7 +13,7 @@ import { inicioDoHorario, MIN_BLOCO, proximaData, rotuloBloco, rotuloDia, rotulo
 export type Confirmacao = { inicio: Date; freq: Frequencia | null; until: string | null };
 
 /**
- * Escolhe o início dentro da faixa e, se a votação é recorrente, a data da
+ * Escolhe o início dentro da faixa e, se o pedido é recorrente, a data da
  * primeira reunião, a frequência e até quando. Quem chama grava (confirmar_votacao).
  */
 export default function DialogoConfirmar({

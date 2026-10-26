@@ -10,7 +10,7 @@ import Segmentado from "@/components/ui/Segmentado";
 import { dataHoraCurta } from "@/lib/datas";
 import { supabaseNavegador } from "@/lib/supabase/client";
 import type { MapaVotacao, RespostaRow, VotacaoRow } from "@/lib/supabase/tipos";
-import { rotuloDuracao, type StatusVotacao } from "@/lib/votacao";
+import { rotuloDuracao, traduzirErroVotacao, type StatusVotacao } from "@/lib/votacao";
 import GradeVotacao from "./GradeVotacao";
 import ResultadoVotacao from "./ResultadoVotacao";
 
@@ -23,7 +23,7 @@ const VISTAS: { valor: Vista; rotulo: string }[] = [
 ];
 
 /**
- * Página de uma votação. Cada mudança na grade é salva sozinha (com uma pequena
+ * Página de um pedido de disponibilidade. Cada mudança na grade é salva sozinha (com uma pequena
  * espera para juntar o arraste) e o mapa de calor é atualizado em seguida.
  */
 export default function PaginaVotacao({
@@ -80,7 +80,7 @@ export default function PaginaVotacao({
     const { error } = await sb.from("votacao_respostas").upsert({ votacao_id: votacao.id, blocos: [...blocos] }, { onConflict: "votacao_id,member_id" });
     if (error) {
       setSalvo(null);
-      return setAviso(/row-level security/i.test(error.message) ? "A votação fechou; não dá mais para mudar." : error.message);
+      return setAviso(/row-level security/i.test(error.message) ? "O pedido fechou; não dá mais para mudar." : traduzirErroVotacao(error.message));
     }
     setSalvo("salvo");
     const { data } = await sb.rpc("mapa_votacao", { p_id: votacao.id });
@@ -90,7 +90,7 @@ export default function PaginaVotacao({
 
   async function copiarLink() {
     try {
-      await navigator.clipboard.writeText(`${window.location.origin}/votacoes/${votacao.id}`);
+      await navigator.clipboard.writeText(`${window.location.origin}/disponibilidade/${votacao.id}`);
       setAviso("Link copiado. Cole no grupo para todos preencherem.");
     } catch {
       setAviso("Não deu para copiar; copie o endereço da barra do navegador.");
@@ -100,8 +100,8 @@ export default function PaginaVotacao({
   return (
     <div className="flex flex-col gap-5">
       <header className="flex flex-col gap-3">
-        <Link href="/votacoes" className="self-start text-[0.8125rem] text-ia-apoio hover:text-ia-petroleo">
-          ← Votações
+        <Link href="/disponibilidade" className="self-start text-[0.8125rem] text-ia-apoio hover:text-ia-petroleo">
+          ← Disponibilidade
         </Link>
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="min-w-0">
@@ -130,7 +130,7 @@ export default function PaginaVotacao({
                 : salvo === "salvo"
                   ? "Salvo"
                   : "Arraste sobre os horários em que você pode."
-              : "A votação não aceita mais respostas."
+              : "Este pedido não aceita mais respostas."
             : "Quanto mais forte, mais gente pode."}
         </p>
       </div>

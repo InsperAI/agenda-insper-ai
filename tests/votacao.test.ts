@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { chaveDia, spDe } from "@/lib/fuso";
-import { chaveBloco, diasDaSemana, inicioDoHorario, melhoresHorarios, N_BLOCOS, proximaData, rotuloBloco, rotuloDuracao, statusVotacao } from "@/lib/votacao";
+import { chaveBloco, diasDaSemana, inicioDoHorario, melhoresHorarios, N_BLOCOS, proximaData, rotuloBloco, rotuloDuracao, statusVotacao, traduzirErroVotacao } from "@/lib/votacao";
 
 describe("blocos", () => {
   it("vão das 8h às 21h em 30 min", () => {
@@ -91,5 +91,17 @@ describe("datas", () => {
     const d = inicioDoHorario("2026-11-03", 3); // 9h30
     expect(chaveDia(d)).toBe("2026-11-03");
     expect(d.toISOString()).toBe(spDe(2026, 11, 3, 9, 30).toISOString());
+  });
+});
+
+describe("traduzirErroVotacao", () => {
+  it("troca 'votação' do banco por 'pedido' na interface", () => {
+    expect(traduzirErroVotacao("Esta votação já foi confirmada.")).toBe("Este pedido já foi confirmado.");
+    expect(traduzirErroVotacao("Só a diretoria abre votações.")).toBe("Só a diretoria pede disponibilidade.");
+    expect(traduzirErroVotacao("Só quem abriu a votação (e ainda é da diretoria) pode confirmar.")).toBe("Só quem fez o pedido (e ainda é da diretoria) pode confirmar.");
+  });
+
+  it("deixa como está o que não menciona votação", () => {
+    expect(traduzirErroVotacao("O prazo precisa ser no futuro.")).toBe("O prazo precisa ser no futuro.");
   });
 });

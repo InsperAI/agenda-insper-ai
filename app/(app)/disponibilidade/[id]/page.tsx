@@ -6,11 +6,11 @@ import { supabaseServidor } from "@/lib/supabase/server";
 import type { RespostaRow } from "@/lib/supabase/tipos";
 import { aceitaRespostas, statusVotacao } from "@/lib/votacao";
 
-export const metadata: Metadata = { title: "Votação" };
+export const metadata: Metadata = { title: "Disponibilidade" };
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-/** A RLS só devolve a votação para quem abriu ou foi convidado. */
+/** A RLS só devolve o pedido para quem o criou ou foi convidado. */
 export default async function PaginaVotacaoRota({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const { membro } = await obterMembroAtual();
@@ -57,10 +57,10 @@ export default async function PaginaVotacaoRota({ params }: { params: Promise<{ 
 function NaoEncontrada() {
   return (
     <div className="wrap-estreito flex flex-col items-start gap-3 py-10">
-      <h1 className="t-h2">Votação não encontrada</h1>
-      <p className="t-apoio">Ela pode ter sido excluída, ou você não está entre os convidados. Se acha que devia estar, fale com quem mandou o link.</p>
-      <Link href="/votacoes" className="text-[0.9rem] text-ia-cobalto underline underline-offset-4">
-        Ver suas votações
+      <h1 className="t-h2">Pedido não encontrado</h1>
+      <p className="t-apoio">Ele pode ter sido excluído, ou você não está entre os convidados. Se acha que devia estar, fale com quem mandou o link.</p>
+      <Link href="/disponibilidade" className="text-[0.9rem] text-ia-cobalto underline underline-offset-4">
+        Ver seus pedidos de disponibilidade
       </Link>
     </div>
   );
