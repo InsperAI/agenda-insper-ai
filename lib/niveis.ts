@@ -33,9 +33,15 @@ export function podeEditar(nivel: Nivel): boolean {
   return nivel === "diretoria";
 }
 
-/** Para quem não passa pela RLS (feed .ics com service role): só o que `nivel` pode ver. */
-export function visiveisPara<T extends { publico: readonly NivelPublico[] }>(linhas: readonly T[], nivel: Nivel): T[] {
-  return linhas.filter((l) => podeVer(nivel, l.publico));
+/**
+ * Para quem não passa pela RLS (feed .ics com service role): o que o membro vê
+ * pelo nível ou por ter sido convidado individualmente (0004_votacoes.sql).
+ */
+export function visiveisPara<T extends { publico: readonly NivelPublico[]; convidados: readonly string[] }>(
+  linhas: readonly T[],
+  membro: { nivel: Nivel; id: string },
+): T[] {
+  return linhas.filter((l) => podeVer(membro.nivel, l.publico) || l.convidados.includes(membro.id));
 }
 
 /** Liga/desliga um nível no público, devolvendo lista nova na ordem de NIVEIS_PUBLICO. */
@@ -44,10 +50,10 @@ export function alternarPublico(publico: readonly NivelPublico[], nivel: NivelPu
   return NIVEIS_PUBLICO.map((n) => n.id).filter((id) => (id === nivel ? !ligado : publico.includes(id)));
 }
 
-/** "Visível para …" no painel do evento. */
-export function frasePublico(publico: readonly NivelPublico[]): string {
-  const nomes = NIVEIS_PUBLICO.filter((n) => publico.includes(n.id)).map((n) => n.plural.toLowerCase());
-  if (nomes.length === 0) return "só a diretoria";
-  if (nomes.length === 1) return `diretoria e ${nomes[0]}`;
-  return `diretoria, ${nomes.slice(0, -1).join(", ")} e ${nomes[nomes.length - 1]}`;
+/** "Visível para …" no painel do evento; `convidados` = quantos convidados individuais. */
+export function frasePublico(publico: readonly NivelPublico[], convidados = 0): string {
+  const nomes = ["diretoria", ...NIVEIS_PUBLICO.filter((n) => publico.includes(n.id)).map((n) => n.plural.toLowerCase())];
+  if (convidados > 0) nomes.push(`${convidados} ${convidados === 1 ? "convidado" : "convidados"}`);
+  if (nomes.length === 1) return "só a diretoria";
+  return nomes.length === 2 ? `${nomes[0]} e ${nomes[1]}` : `${nomes.slice(0, -1).join(", ")} e ${nomes[nomes.length - 1]}`;
 }

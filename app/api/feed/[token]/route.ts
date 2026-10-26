@@ -21,7 +21,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ tok
   const { data: dono } = await admin.from("feed_tokens").select("member_id").eq("token", token).maybeSingle();
   if (!dono) return naoEncontrado();
 
-  const { data: membro } = await admin.from("members").select("nivel").eq("id", dono.member_id).maybeSingle();
+  const { data: membro } = await admin.from("members").select("id,nivel").eq("id", dono.member_id).maybeSingle();
   if (!membro) return naoEncontrado();
 
   const agora = new Date();
@@ -31,7 +31,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ tok
   });
   if (error) return new NextResponse("Erro ao gerar o calendário.", { status: 500 });
 
-  return new NextResponse(serializarCalendario(visiveisPara(linhas ?? [], membro.nivel), "Insper AI · Agenda", agora), {
+  return new NextResponse(serializarCalendario(visiveisPara(linhas ?? [], membro), "Insper AI · Agenda", agora), {
     status: 200,
     headers: {
       "Content-Type": "text/calendar; charset=utf-8",

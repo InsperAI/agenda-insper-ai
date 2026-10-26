@@ -26,7 +26,7 @@ Nenhuma das contas existe ainda. A ordem importa: Supabase → Google Cloud → 
 
 ### B. Supabase (supabase.com, plano Free)
 1. **New project** → região `South America (São Paulo)`. Guarde a senha do banco.
-2. **SQL Editor** → cole `supabase/migrations/0001_init.sql` inteiro → **Run**. Depois, uma query nova para cada uma, em ordem: `0002_niveis.sql` e `0003_publico_e_pedidos.sql` → **Run**. Cada migração roda uma vez só.
+2. **SQL Editor** → cole `supabase/migrations/0001_init.sql` inteiro → **Run**. Depois, uma query nova para cada uma, em ordem: `0002_niveis.sql`, `0003_publico_e_pedidos.sql` e `0004_votacoes.sql` → **Run**. Cada migração roda uma vez só.
 3. Abra `supabase/seed.sql`, troque o e-mail pelo da **sua conta Google** e o nome, cole no SQL Editor → **Run**. Você é o primeiro admin.
 4. **Project Settings → API**: copie *Project URL*, a chave *anon / publishable* e a chave *service_role / secret* para o `.env.local`.
 5. **Authentication → URL Configuration**:
@@ -56,6 +56,7 @@ Para adicionar as pessoas: mande o link do site; quem não está cadastrado cai 
 |---|---|
 | Esquema, triggers de auditoria, RLS | `supabase/migrations/0001_init.sql` |
 | Níveis (diretoria/membro/trainee) | `supabase/migrations/0002_niveis.sql`, `lib/niveis.ts` |
+| Votações de horário (estilo when2meet) e convidados individuais em eventos | `supabase/migrations/0004_votacoes.sql`, `lib/votacao.ts`, `components/votacao/` |
 | Público por evento (`publico`) e pedidos de acesso | `supabase/migrations/0003_publico_e_pedidos.sql`, `app/sem-acesso/`, `components/admin/PedidosAcesso.tsx` |
 | Tema claro/escuro (`light-dark()` + cookie `tema`) | `app/globals.css`, `lib/tema.ts` |
 | Portão de membro (logado mas fora da lista → `/sem-acesso`) | `app/(app)/layout.tsx`, `proxy.ts` |

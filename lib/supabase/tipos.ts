@@ -1,5 +1,5 @@
 /**
- * Tipos do banco, escritos à mão para espelhar supabase/migrations/ (0001–0003).
+ * Tipos do banco, escritos à mão para espelhar supabase/migrations/ (0001–0004).
  * Se o esquema mudar, mude a migração primeiro e depois este arquivo.
  */
 
@@ -54,6 +54,8 @@ export type EventoRow = {
   original_start: string | null;
   cancelled: boolean;
   publico: NivelPublico[];
+  /** Membros que veem o evento fora do `publico` (convidados de uma votação). */
+  convidados: string[];
   created_by: string | null;
   updated_by: string | null;
   created_at: string;
@@ -75,6 +77,7 @@ export type EventoInsert = {
   original_start?: string | null;
   cancelled?: boolean;
   publico?: NivelPublico[];
+  convidados?: string[];
   created_by?: string | null;
   updated_by?: string | null;
   created_at?: string;
@@ -90,6 +93,28 @@ export type PedidoRow = {
   nivel: Nivel;
   created_at: string;
 };
+export type ModoVotacao = "unica" | "recorrente";
+
+export type VotacaoRow = {
+  id: string;
+  titulo: string;
+  descricao: string;
+  modo: ModoVotacao;
+  /** 'AAAA-MM-DD' (única) ou '1'..'7' (recorrente, 1 = segunda). */
+  dias: string[];
+  duracao_min: number;
+  prazo: string;
+  niveis: Nivel[];
+  criado_por: string | null;
+  evento_id: string | null;
+  confirmada_em: string | null;
+  created_at: string;
+};
+
+export type RespostaRow = { votacao_id: string; member_id: string; blocos: string[]; updated_at: string };
+
+export type MapaVotacao = { total: number; respondidos: number; contagem: Record<string, number> };
+
 /** `email` vem do JWT (default no banco); o cliente não manda. */
 export type PedidoInsert = { name: string; cargo?: string; nivel?: NivelPublico };
 
@@ -114,6 +139,24 @@ export type Database = {
         Update: EventoUpdate;
         Relationships: [];
       };
+      votacoes: {
+        Row: VotacaoRow;
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
+      votacao_convidados: {
+        Row: { votacao_id: string; member_id: string };
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
+      votacao_respostas: {
+        Row: RespostaRow;
+        Insert: { votacao_id: string; blocos: string[] };
+        Update: { blocos: string[] };
+        Relationships: [];
+      };
       access_requests: {
         Row: PedidoRow;
         Insert: PedidoInsert;
@@ -132,8 +175,26 @@ export type Database = {
       pode_editar: { Args: Record<PropertyKey, never>; Returns: boolean };
       pode_ver: { Args: { p_publico: NivelPublico[] }; Returns: boolean };
       aprovar_pedido: { Args: { p_id: string; p_nivel: Nivel }; Returns: MembroRow };
+      criar_votacao: {
+        Args: {
+          p_titulo: string;
+          p_descricao: string;
+          p_modo: ModoVotacao;
+          p_dias: string[];
+          p_duracao_min: number;
+          p_prazo: string;
+          p_niveis: Nivel[];
+          p_incluir: string[];
+          p_excluir: string[];
+        };
+        Returns: string;
+      };
+      mapa_votacao: { Args: { p_id: string }; Returns: MapaVotacao };
+      pendencias_votacao: { Args: Record<PropertyKey, never>; Returns: { responder: number; resultados: number } };
+      confirmar_votacao: { Args: { p_id: string; p_inicio: string; p_freq: Frequencia | null; p_until: string | null }; Returns: string };
+      reabrir_votacao: { Args: { p_id: string; p_prazo: string; p_dias: string[] | null }; Returns: undefined };
     };
-    Enums: { categoria: Categoria; frequencia: Frequencia; nivel: Nivel };
+    Enums: { categoria: Categoria; frequencia: Frequencia; nivel: Nivel; modo_votacao: ModoVotacao };
     CompositeTypes: { [_ in never]: never };
   };
 };

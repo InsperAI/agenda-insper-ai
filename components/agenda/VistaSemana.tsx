@@ -148,7 +148,7 @@ export default function VistaSemana({
           <div className="relative">
             {HORAS.map((h, i) => (
               <span key={h} className="tabular absolute right-2 -translate-y-1/2 text-[0.75rem] text-ia-meta" style={{ top: i * ALTURA_HORA }}>
-                {i === 0 ? "" : `${h}H`}
+                {i === 0 ? "" : `${h}h`}
               </span>
             ))}
           </div>

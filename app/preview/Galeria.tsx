@@ -16,6 +16,7 @@ import { tituloMes, tituloSemana } from "@/lib/datas";
 import { agoraSP, chaveDia, gradeDoMes, inicioDaSemana, inicioDoDia, inicioDoMes } from "@/lib/fuso";
 import { expandir, type Ocorrencia } from "@/lib/recorrencia";
 import type { EventoRow, MembroRow } from "@/lib/supabase/tipos";
+import GaleriaVotacao from "./GaleriaVotacao";
 
 const MEMBROS: MembroRow[] = [
   { id: "m1", email: "gui@insper.ai", name: "Guilherme Leal", cargo: "Presidente", nivel: "diretoria", is_admin: true, created_at: "2026-08-01T12:00:00Z" },
@@ -34,6 +35,7 @@ function linha(p: Partial<EventoRow> & Pick<EventoRow, "id" | "title" | "categor
     original_start: null,
     cancelled: false,
     publico: [],
+    convidados: [],
     created_by: "m1",
     updated_by: "m2",
     created_at: "2026-08-01T12:00:00+00:00",
@@ -195,6 +197,8 @@ export default function Galeria() {
           <h2 className="t-h3">Próximos 60 dias</h2>
           <VistaProximos ocorrencias={ocorrencias.filter((o) => o.fim.getTime() > agoraMs)} carregando={false} aoSelecionar={setSelecionada} />
         </section>
+
+        <GaleriaVotacao />
 
         <section className="flex gap-2">
           <Botao onClick={() => setSelecionada(ocorrencias[0] ?? null)}>Abrir painel</Botao>

@@ -21,20 +21,25 @@ describe("podeVer", () => {
 });
 
 describe("visiveisPara (feed .ics)", () => {
-  const linhas: { id: string; publico: NivelPublico[] }[] = [
-    { id: "so-diretoria", publico: [] },
-    { id: "membros", publico: ["membro"] },
-    { id: "trainees", publico: ["trainee"] },
-    { id: "todos", publico: ["membro", "trainee"] },
+  const linhas: { id: string; publico: NivelPublico[]; convidados: string[] }[] = [
+    { id: "so-diretoria", publico: [], convidados: [] },
+    { id: "membros", publico: ["membro"], convidados: [] },
+    { id: "trainees", publico: ["trainee"], convidados: [] },
+    { id: "todos", publico: ["membro", "trainee"], convidados: [] },
+    { id: "convite", publico: [], convidados: ["t1"] },
   ];
 
   it("trainee não vê o que é só de membros, e vice-versa", () => {
-    expect(visiveisPara(linhas, "trainee").map((l) => l.id)).toEqual(["trainees", "todos"]);
-    expect(visiveisPara(linhas, "membro").map((l) => l.id)).toEqual(["membros", "todos"]);
+    expect(visiveisPara(linhas, { nivel: "trainee", id: "t2" }).map((l) => l.id)).toEqual(["trainees", "todos"]);
+    expect(visiveisPara(linhas, { nivel: "membro", id: "m1" }).map((l) => l.id)).toEqual(["membros", "todos"]);
+  });
+
+  it("convidado individual vê o evento mesmo fora do público", () => {
+    expect(visiveisPara(linhas, { nivel: "trainee", id: "t1" }).map((l) => l.id)).toEqual(["trainees", "todos", "convite"]);
   });
 
   it("diretoria recebe tudo", () => {
-    expect(visiveisPara(linhas, "diretoria")).toHaveLength(4);
+    expect(visiveisPara(linhas, { nivel: "diretoria", id: "d1" })).toHaveLength(5);
   });
 });
 
@@ -44,6 +49,8 @@ describe("frasePublico", () => {
     expect(frasePublico(["membro"])).toBe("diretoria e membros");
     expect(frasePublico(["trainee"])).toBe("diretoria e trainees");
     expect(frasePublico(["trainee", "membro"])).toBe("diretoria, membros e trainees");
+    expect(frasePublico([], 2)).toBe("diretoria e 2 convidados");
+    expect(frasePublico(["membro"], 1)).toBe("diretoria, membros e 1 convidado");
   });
 });
 

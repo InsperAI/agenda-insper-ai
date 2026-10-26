@@ -105,7 +105,7 @@ export default function PainelEvento({
             <Linha icone={<IcoCalendario />}>{linhaQuando(occ.inicio, occ.fim, occ.evento.all_day)}</Linha>
             {ehDeSerie(occ) && <Linha icone={<IcoRepetir />}>{descricaoSerie(occ)}</Linha>}
             {occ.evento.location && <Linha icone={<IcoLocal />}>{occ.evento.location}</Linha>}
-            <Linha icone={<IcoPessoa />}>Visível para {frasePublico(occ.evento.publico)}</Linha>
+            <Linha icone={<IcoPessoa />}>Visível para {frasePublico(occ.evento.publico, occ.evento.convidados.length)}</Linha>
             {occ.evento.link && (
               <Linha icone={<IcoLink />}>
                 <a href={occ.evento.link} target="_blank" rel="noreferrer" className="break-all text-ia-cobalto underline decoration-1 underline-offset-4 hover:text-ia-petroleo">

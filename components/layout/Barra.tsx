@@ -8,10 +8,11 @@ import BrandMark from "@/components/ui/BrandMark";
 import MenuUsuario from "./MenuUsuario";
 
 /** Barra de 64 px: marca + nome do app à esquerda, links no meio, usuário à direita. */
-export default function Barra({ membro, tema, pedidos = 0 }: { membro: MembroAtual; tema: Tema; pedidos?: number }) {
+export default function Barra({ membro, tema, pedidos = 0, votacoes = 0 }: { membro: MembroAtual; tema: Tema; pedidos?: number; votacoes?: number }) {
   const pathname = usePathname();
   const links: { href: string; rotulo: string; contador?: number }[] = [
     { href: "/agenda", rotulo: "Agenda" },
+    { href: "/votacoes", rotulo: "Votações", contador: votacoes },
     { href: "/assinar", rotulo: "Assinar" },
     ...(membro.is_admin ? [{ href: "/admin", rotulo: "Membros", contador: pedidos }] : []),
   ];
@@ -39,7 +40,7 @@ export default function Barra({ membro, tema, pedidos = 0 }: { membro: MembroAtu
               >
                 {l.rotulo}
                 {!!l.contador && (
-                  <span className="ml-1.5 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-ia-cobalto px-1.5 text-[0.7rem] font-semibold text-ia-papel" aria-label={`${l.contador} pedidos pendentes`}>
+                  <span className="ml-1.5 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-ia-cobalto px-1.5 text-[0.7rem] font-semibold text-ia-papel" aria-label={`${l.contador} pendentes`}>
                     {l.contador}
                   </span>
                 )}

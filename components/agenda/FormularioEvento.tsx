@@ -9,6 +9,7 @@ import Dialogo from "@/components/ui/Dialogo";
 import { IcoChecar } from "@/components/ui/Icones";
 import { CATEGORIAS } from "@/lib/categorias";
 import type { DadosEvento } from "@/lib/eventos";
+import { fimDoSemestre } from "@/lib/datas";
 import { deChaveDia, deInputDataHora, paraInputData, paraInputDataHora, sp } from "@/lib/fuso";
 import { alternarPublico, NIVEIS_PUBLICO } from "@/lib/niveis";
 import type { Categoria, Frequencia, NivelPublico } from "@/lib/supabase/tipos";
@@ -36,12 +37,6 @@ const TITULOS: Record<ModoFormulario, string> = {
   "editar-esta": "Editar esta ocorrência",
   "editar-serie": "Editar a série",
 };
-
-/** Fim do semestre letivo em que `d` cai: 30/06 ou 20/12. */
-function fimDoSemestre(d: Date): string {
-  const t = sp(d);
-  return t.getMonth() < 6 ? `${t.getFullYear()}-06-30` : `${t.getFullYear()}-12-20`;
-}
 
 /**
  * Criar/editar. O componente é montado com `key` nova a cada abertura, então

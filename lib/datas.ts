@@ -117,3 +117,9 @@ export function linhaQuando(inicio: Date, fim: Date, diaInteiro: boolean): strin
 export function dataHoraCurta(d: Date): string {
   return `${dataComAno(d)} às ${hora(d)}`;
 }
+
+/** Fim do semestre letivo em que `d` cai: 30/06 ou 20/12. */
+export function fimDoSemestre(d: Date): string {
+  const t = sp(d);
+  return t.getMonth() < 6 ? `${t.getFullYear()}-06-30` : `${t.getFullYear()}-12-20`;
+}
