@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import MarcaInsper from "@/components/ui/MarcaInsper";
 import { detalheResumo, obterResumoVotacao } from "@/lib/resumoVotacao";
 import { supabaseServidor } from "@/lib/supabase/server";
-import BotaoGoogle from "../../entrar/BotaoGoogle";
+import OpcoesEntrar from "../../entrar/OpcoesEntrar";
 
 type Props = { params: Promise<{ codigo: string }> };
 
@@ -53,9 +53,9 @@ export default async function LinkCurto({ params }: Props) {
           <p className="text-[0.9rem] text-ia-cobalto">Pedido de disponibilidade</p>
           <h1 className="t-h1 mt-2">{resumo.titulo}</h1>
           <p className="t-apoio mt-3">{detalheResumo(resumo)}.</p>
-          <p className="t-apoio mt-1">Entre com a conta Google da Insper AI para marcar os horários em que você pode.</p>
+          <p className="t-apoio mt-1">Entre com o Google ou com um código no seu e-mail para marcar os horários em que você pode.</p>
           <div className="mt-8">
-            <BotaoGoogle next={destino} />
+            <OpcoesEntrar next={destino} />
           </div>
         </div>
       </div>

@@ -3,7 +3,7 @@ import Link from "next/link";
 import CenaSemana from "@/components/entrar/CenaSemana";
 import MarcaInsper from "@/components/ui/MarcaInsper";
 import { destinoSeguro } from "@/lib/url";
-import BotaoGoogle from "./BotaoGoogle";
+import OpcoesEntrar from "./OpcoesEntrar";
 
 export const metadata: Metadata = { title: "Entrar" };
 
@@ -35,10 +35,10 @@ export default async function Entrar({ searchParams }: { searchParams: Promise<{
         <div className="flex flex-1 flex-col justify-center py-10 lg:py-0">
           <div className="w-full max-w-sm">
             <h1 className="t-h1">Entrar na agenda</h1>
-            <p className="t-apoio mt-3">Use a conta Google do seu e-mail na Insper AI. Ainda não tem acesso? Entre mesmo assim e peça por lá; um admin aprova.</p>
+            <p className="t-apoio mt-3">Entre com a conta Google ou com um código no seu e-mail. Ainda não tem acesso? Entre mesmo assim e peça por lá; um admin aprova.</p>
 
             <div className="mt-8">
-              <BotaoGoogle next={destino} />
+              <OpcoesEntrar next={destino} />
             </div>
 
             {erro && ERROS[erro] && (
