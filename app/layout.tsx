@@ -30,6 +30,9 @@ export const metadata: Metadata = {
   },
   description: "Calendário compartilhado da Insper AI: eventos, aulas, reuniões e prazos.",
   robots: { index: false, follow: false },
+  // Instalado na tela de início do iPhone: tela cheia e nome curto embaixo do ícone.
+  appleWebApp: { capable: true, title: "Agenda", statusBarStyle: "default" },
+  formatDetection: { telephone: false },
 };
 
 export const viewport: Viewport = {
@@ -38,6 +41,8 @@ export const viewport: Viewport = {
     { media: "(prefers-color-scheme: dark)", color: "#0A111D" },
   ],
   colorScheme: "light dark",
+  // Ocupa a tela toda (atrás do notch e da barra de início); as safe areas vêm do CSS.
+  viewportFit: "cover",
 };
 
 export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

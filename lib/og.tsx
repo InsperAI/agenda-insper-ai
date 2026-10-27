@@ -33,9 +33,9 @@ async function carregarFonte(texto: string): Promise<ArrayBuffer | null> {
   }
 }
 
-function Marca() {
+function Marca({ largura = 66 }: { largura?: number }) {
   return (
-    <svg width="66" height="56" viewBox="123 17 766 652" fill="none">
+    <svg width={largura} height={Math.round((largura * 652) / 766)} viewBox="123 17 766 652" fill="none">
       <defs>
         <linearGradient id="g" gradientUnits="userSpaceOnUse" x1="123" y1="669" x2="889" y2="17">
           <stop offset="0" stopColor="#2074DE" />
@@ -99,5 +99,22 @@ export async function cartaoOG({ rotulo, titulo, detalhe, comGrade = false }: { 
       </div>
     ),
     { ...TAMANHO_OG, fonts: fonte ? [{ name: "Space Grotesk", data: fonte, weight: 600, style: "normal" }] : undefined },
+  );
+}
+
+/**
+ * Ícone do app (tela de início do iPhone/Android): símbolo da marca centralizado
+ * em fundo branco. `margem` é a fração livre em volta; ícones "maskable" do
+ * Android precisam de ~20% para o recorte circular não cortar o símbolo.
+ */
+export function iconeApp(tamanho: number, margem = 0.22) {
+  const largura = Math.round(tamanho * (1 - 2 * margem));
+  return new ImageResponse(
+    (
+      <div style={{ display: "flex", width: "100%", height: "100%", alignItems: "center", justifyContent: "center", background: "#ffffff" }}>
+        <Marca largura={largura} />
+      </div>
+    ),
+    { width: tamanho, height: tamanho },
   );
 }

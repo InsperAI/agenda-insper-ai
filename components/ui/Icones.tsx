@@ -1,5 +1,6 @@
 import {
   ArrowUpRight,
+  CalendarClock,
   CalendarDays,
   Check,
   ChevronLeft,
@@ -12,6 +13,7 @@ import {
   Pencil,
   Plus,
   Repeat2,
+  Rss,
   Search,
   Trash2,
   Users,
@@ -50,6 +52,8 @@ export const IcoCopiar = ico(Copy);
 export const IcoChecar = ico(Check);
 export const IcoPessoa = ico(Users);
 export const IcoExterno = ico(ArrowUpRight);
+export const IcoDisponibilidade = ico(CalendarClock);
+export const IcoAssinar = ico(Rss);
 
 /** Logo do Google, colorido, para o botão de entrar (marca: fica fora do lucide). */
 export const IcoGoogle = (p: P) => (

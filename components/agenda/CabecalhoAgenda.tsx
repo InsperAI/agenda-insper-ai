@@ -68,11 +68,14 @@ export default function CabecalhoAgenda({
           />
         </label>
         <Segmentado opcoes={VISTAS} valor={vista} aoMudar={aoMudarVista} rotulo="Vista da agenda" />
+        {/* No celular, criar fica no botão flutuante (BotaoFlutuante, em Agenda). */}
         {aoNovo && (
-          <Botao variante="primario" onClick={aoNovo} title="Novo evento (N)" aria-label="Novo evento" className="ml-auto sm:ml-0">
-            <IcoMais />
-            <span className="hidden sm:inline">Novo evento</span>
-          </Botao>
+          <span className="hidden md:contents">
+            <Botao variante="primario" onClick={aoNovo} title="Novo evento (N)" aria-label="Novo evento">
+              <IcoMais />
+              Novo evento
+            </Botao>
+          </span>
         )}
       </div>
     </div>

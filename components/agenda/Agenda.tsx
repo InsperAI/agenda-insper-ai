@@ -2,7 +2,7 @@
 
 import { addDays, addHours, addMonths, addWeeks, setHours } from "date-fns";
 import { AnimatePresence, motion, type Variants } from "motion/react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type TouchEvent } from "react";
 import Aviso from "@/components/ui/Aviso";
 import Botao from "@/components/ui/Botao";
 import Dialogo from "@/components/ui/Dialogo";
@@ -24,6 +24,7 @@ import { agoraSP, chaveDia, deChaveDia, gradeDoMes, inicioDaSemana, inicioDoDia,
 import { expandir, type Ocorrencia } from "@/lib/recorrencia";
 import type { Categoria, EventoRow } from "@/lib/supabase/tipos";
 import { montarUrl, type Vista } from "@/lib/url";
+import BotaoFlutuante from "./BotaoFlutuante";
 import CabecalhoAgenda from "./CabecalhoAgenda";
 import DialogoSerie, { type Escopo, type PerguntaSerie } from "./DialogoSerie";
 import FiltroCategorias from "./FiltroCategorias";
@@ -36,6 +37,9 @@ import VistaSemana from "./VistaSemana";
 type Formulario = { modo: "criar"; inicio?: Date; diaInteiro?: boolean } | { modo: "editar"; occ: Ocorrencia; escopo: Escopo };
 
 const CHAVE_FILTROS = "agenda:filtros";
+
+/** Deslize horizontal mínimo (px) para trocar de mês no celular. */
+const DESLIZE_MIN_PX = 60;
 
 /** Mês/semana deslizam 24 px no sentido da navegação; troca de vista só esmaece. */
 const TRANSICAO_PERIODO: Variants = {
@@ -182,6 +186,22 @@ export default function Agenda({ vistaInicial, ancoraInicial, podeEditar }: { vi
     },
     [vista, dataAncora],
   );
+  // Deslizar para os lados troca o mês (só no Mês: a Semana já rola de lado no celular).
+  const toque = useRef<{ x: number; y: number } | null>(null);
+  function comecarToque(e: TouchEvent) {
+    const t = e.touches[0];
+    toque.current = vista === "mes" && t ? { x: t.clientX, y: t.clientY } : null;
+  }
+  function terminarToque(e: TouchEvent) {
+    const inicio = toque.current;
+    const t = e.changedTouches[0];
+    toque.current = null;
+    if (!inicio || !t) return;
+    const dx = t.clientX - inicio.x;
+    const dy = t.clientY - inicio.y;
+    if (Math.abs(dx) >= DESLIZE_MIN_PX && Math.abs(dx) > Math.abs(dy) * 1.5) navegar(dx < 0 ? 1 : -1);
+  }
+
   const irHoje = useCallback(() => {
     setDirecao(0);
     setAncora(chaveDia(new Date()));
@@ -324,6 +344,8 @@ export default function Agenda({ vistaInicial, ancoraInicial, podeEditar }: { vi
           animate="parado"
           exit="sai"
           className="flex min-w-0 flex-col"
+          onTouchStart={comecarToque}
+          onTouchEnd={terminarToque}
         >
           {vista === "mes" && <VistaMes ancora={dataAncora} ocorrencias={ocorrencias} hoje={hoje} aoSelecionar={setSelecionada} aoCriarEm={podeEditar ? (dia) => abrirCriar(setHours(dia, 9)) : undefined} />}
           {vista === "semana" && <VistaSemana ancora={dataAncora} ocorrencias={ocorrencias} hoje={hoje} aoSelecionar={setSelecionada} aoCriarEm={podeEditar ? (inicio) => abrirCriar(inicio) : undefined} />}
@@ -375,6 +397,7 @@ export default function Agenda({ vistaInicial, ancoraInicial, podeEditar }: { vi
         <p className="t-apoio">{confirmacao?.texto}</p>
       </Dialogo>
 
+      {podeEditar && <BotaoFlutuante aoClicar={() => abrirCriar()} rotulo="Novo evento" />}
       <Aviso mensagem={aviso} aoFechar={fecharAviso} />
     </div>
   );

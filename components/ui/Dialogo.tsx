@@ -1,12 +1,16 @@
 "use client";
 
-import { useEffect, useId, useRef, type ReactNode } from "react";
+import { useEffect, useId, useRef, type PointerEvent, type ReactNode } from "react";
 import { BotaoIcone } from "./Botao";
 import { IcoFechar } from "./Icones";
 
+/** Arrastar o topo da folha para baixo além disso fecha (celular). */
+const ARRASTE_FECHA_PX = 90;
+
 /**
  * <dialog> nativo (foco preso, Esc fecha, fundo escurecido). `variante="folha"`
- * ancora à direita no desktop e sobe de baixo no celular.
+ * ancora à direita no desktop; no celular todo diálogo sobe de baixo e fecha
+ * arrastando o topo para baixo, como as folhas do iOS.
  */
 export default function Dialogo({
   aberto,
@@ -27,6 +31,29 @@ export default function Dialogo({
 }) {
   const ref = useRef<HTMLDialogElement>(null);
   const idTitulo = useId();
+  const arraste = useRef<{ y0: number; dy: number } | null>(null);
+
+  function comecarArraste(e: PointerEvent<HTMLDivElement>) {
+    if (e.pointerType !== "touch" || !window.matchMedia("(max-width: 767px)").matches) return;
+    arraste.current = { y0: e.clientY, dy: 0 };
+  }
+  function moverArraste(e: PointerEvent<HTMLDivElement>) {
+    const a = arraste.current;
+    const d = ref.current;
+    if (!a || !d) return;
+    a.dy = Math.max(0, e.clientY - a.y0);
+    d.style.transition = "none";
+    d.style.transform = `translateY(${a.dy}px)`;
+  }
+  function soltarArraste() {
+    const a = arraste.current;
+    const d = ref.current;
+    arraste.current = null;
+    if (!a || !d) return;
+    d.style.transition = "transform 200ms cubic-bezier(0.16, 1, 0.3, 1)";
+    d.style.transform = "";
+    if (a.dy > ARRASTE_FECHA_PX) aoFechar();
+  }
 
   useEffect(() => {
     const d = ref.current;
@@ -49,8 +76,14 @@ export default function Dialogo({
         if (e.target === e.currentTarget) aoFechar();
       }}
     >
-      <div className="flex max-h-[inherit] flex-col" style={{ maxHeight: variante === "folha" ? "100svh" : "calc(100svh - 2rem)" }}>
-        <div className="flex items-start justify-between gap-4 px-6 pt-5 pb-3">
+      <div className="flex max-h-(--dialogo-max) flex-col">
+        <div
+          className="flex touch-none items-start justify-between gap-4 px-6 pt-5 pb-3 md:touch-auto"
+          onPointerDown={comecarArraste}
+          onPointerMove={moverArraste}
+          onPointerUp={soltarArraste}
+          onPointerCancel={soltarArraste}
+        >
           {titulo ? (
             <h2 id={idTitulo} className="t-h4 min-w-0 pt-1">
               {titulo}

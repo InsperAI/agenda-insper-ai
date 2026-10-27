@@ -19,7 +19,7 @@ export default async function LayoutApp({ children }: { children: React.ReactNod
   return (
     <>
       <Barra membro={membro} tema={tema} pedidos={pedidos} votacoes={votacoes} />
-      <main id="conteudo" className="wrap flex min-w-0 flex-1 flex-col py-5 md:py-6">
+      <main id="conteudo" className="wrap flex min-w-0 flex-1 flex-col pt-5 pb-[calc(var(--abas)+1.5rem)] md:py-6">
         {children}
       </main>
     </>

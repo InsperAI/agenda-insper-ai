@@ -13,7 +13,7 @@ export default function Aviso({ mensagem, aoFechar }: { mensagem: string | null;
   }, [mensagem, aoFechar]);
 
   return (
-    <div aria-live="polite" role="status" className="pointer-events-none fixed inset-x-0 bottom-6 z-[70] flex justify-center px-4">
+    <div aria-live="polite" role="status" className="pointer-events-none fixed inset-x-0 bottom-[calc(var(--abas)+0.75rem)] z-[70] flex justify-center px-4 md:bottom-6">
       <AnimatePresence mode="wait">
         {mensagem && (
           <motion.div

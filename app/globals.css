@@ -150,6 +150,13 @@ select,
 .tabular {
   font-variant-numeric: tabular-nums;
 }
+/* Linha que rola de lado (chips no celular) sem barra de rolagem aparente. */
+.sem-barra {
+  scrollbar-width: none;
+}
+.sem-barra::-webkit-scrollbar {
+  display: none;
+}
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -254,11 +261,38 @@ select,
 }
 
 /* ═══ Barra: fundo a 72% com desfoque de 12 px ════════════════════════════ */
+/* Instalado na tela de início (viewport-fit=cover), o app vai até atrás do notch:
+   as barras somam a safe area do iPhone. Fora disso, env() vale 0. */
 .barra {
   background-color: var(--barra-fundo);
   -webkit-backdrop-filter: blur(12px);
   backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--ia-regua);
+  padding-top: env(safe-area-inset-top);
+}
+.barra-abas {
+  background-color: var(--barra-fundo);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+  border-top: 1px solid var(--ia-regua);
+  padding-bottom: env(safe-area-inset-bottom);
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
+/* Altura da barra de abas + barra de início: o que o conteúdo precisa deixar livre embaixo. */
+:root {
+  --abas: calc(3.5rem + env(safe-area-inset-bottom));
+}
+
+/* ═══ Toque: sem flash cinza no iOS, sem zoom duplo em botões ═══════════════ */
+html {
+  -webkit-tap-highlight-color: transparent;
+}
+a,
+button,
+[role="button"],
+summary {
+  touch-action: manipulation;
 }
 
 /* ═══ Campos de formulário ════════════════════════════════════════════════ */
@@ -292,6 +326,12 @@ select,
   .campo:disabled {
     background: var(--ia-nevoa);
     color: var(--apoio);
+  }
+  /* Abaixo de 16 px o Safari do iPhone dá zoom ao focar o campo. */
+  @media (max-width: 767px) {
+    .campo {
+      font-size: 1rem;
+    }
   }
   textarea.campo {
     resize: vertical;
@@ -331,6 +371,7 @@ select,
 
 /* ═══ Diálogos nativos: centro e folha lateral ════════════════════════════ */
 dialog.dialogo {
+  --dialogo-max: calc(100svh - 2rem);
   margin: auto;
   padding: 0;
   border: 1px solid var(--regua);
@@ -350,6 +391,7 @@ dialog.dialogo[open] {
   animation: dialogo-entra 220ms var(--ease-mk);
 }
 dialog.dialogo.folha {
+  --dialogo-max: 100svh;
   margin: 0 0 0 auto;
   height: 100svh;
   max-height: 100svh;
@@ -362,18 +404,34 @@ dialog.dialogo.folha {
 dialog.dialogo.folha[open] {
   animation: folha-entra 260ms var(--ease-mk);
 }
+/* No celular, todo diálogo vira folha que sobe de baixo (padrão do iOS/Android),
+   com alça no topo e respiro para a barra de início. */
 @media (max-width: 767px) {
+  dialog.dialogo,
   dialog.dialogo.folha {
     margin: auto 0 0 0;
     width: 100vw;
     height: auto;
     max-height: 92svh;
-    border-radius: 1rem 1rem 0 0;
-    border-left: 0;
+    border-radius: 1.25rem 1.25rem 0 0;
+    border: 0;
     border-top: 1px solid var(--regua);
+    padding-bottom: env(safe-area-inset-bottom);
+    /* 92svh menos a alça e a barra de início, para o rodapé nunca ser cortado. */
+    --dialogo-max: calc(92svh - 0.8125rem - env(safe-area-inset-bottom));
   }
+  dialog.dialogo::before {
+    content: "";
+    display: block;
+    width: 2.25rem;
+    height: 0.3125rem;
+    margin: 0.5rem auto 0;
+    border-radius: 9999px;
+    background: var(--ia-regua-forte);
+  }
+  dialog.dialogo[open],
   dialog.dialogo.folha[open] {
-    animation: folha-sobe 260ms var(--ease-mk);
+    animation: folha-sobe 280ms var(--ease-mk);
   }
 }
 @keyframes dialogo-entra {
