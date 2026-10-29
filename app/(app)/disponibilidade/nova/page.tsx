@@ -3,15 +3,15 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import FormNovaVotacao from "@/components/votacao/FormNovaVotacao";
 import { obterMembroAtual } from "@/lib/membro";
-import { podeEditar } from "@/lib/niveis";
+import { podeCriarEvento } from "@/lib/niveis";
 import { supabaseServidor } from "@/lib/supabase/server";
 
 export const metadata: Metadata = { title: "Pedir disponibilidade" };
 
-/** Só a diretoria pede disponibilidade (o banco também confere em criar_votacao). */
+/** Diretoria e membros pedem disponibilidade (o banco também confere em criar_votacao, 0008). */
 export default async function PaginaNovaVotacao() {
   const { membro } = await obterMembroAtual();
-  if (!membro || !podeEditar(membro.nivel)) redirect("/disponibilidade");
+  if (!membro || !podeCriarEvento(membro.nivel)) redirect("/disponibilidade");
 
   const supabase = await supabaseServidor();
   const { data: pessoas } = await supabase.from("members").select("id,name,nivel").order("name");

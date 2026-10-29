@@ -4,7 +4,7 @@ import { BotaoLink } from "@/components/ui/Botao";
 import { IcoChecar, IcoMais } from "@/components/ui/Icones";
 import { dataHoraCurta } from "@/lib/datas";
 import { obterMembroAtual } from "@/lib/membro";
-import { podeEditar } from "@/lib/niveis";
+import { podeCriarEvento, podeEditar } from "@/lib/niveis";
 import { supabaseServidor } from "@/lib/supabase/server";
 import type { VotacaoRow } from "@/lib/supabase/tipos";
 import { aceitaRespostas, rotuloDuracao } from "@/lib/votacao";
@@ -48,7 +48,7 @@ export default async function PaginaVotacoes() {
           <h1 className="t-h2">Disponibilidade</h1>
           <p className="t-apoio mt-2">Marque os horários em que você pode. Quem fez o pedido escolhe o melhor e ele entra direto na agenda.</p>
         </div>
-        {podeEditar(membro.nivel) && (
+        {podeCriarEvento(membro.nivel) && (
           <BotaoLink href="/disponibilidade/nova" variante="primario">
             <IcoMais /> Pedir disponibilidade
           </BotaoLink>

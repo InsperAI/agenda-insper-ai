@@ -142,6 +142,10 @@ const ERROS_DO_BANCO: Record<string, string> = {
   "Repetição inválida para este tipo de votação.": "Repetição inválida para este tipo de pedido.",
   "Só quem abriu a votação (e ainda é da diretoria) pode confirmar.": "Só quem fez o pedido (e ainda é da diretoria) pode confirmar.",
   "Só quem abriu a votação (e ainda é da diretoria) pode reabrir.": "Só quem fez o pedido (e ainda é da diretoria) pode reabrir.",
+  // 0008: membros também abrem pedidos.
+  "Trainees não abrem pedidos de disponibilidade.": "Trainees não abrem pedidos de disponibilidade.",
+  "Só quem abriu a votação (e ainda pode criar eventos) pode confirmar.": "Só quem fez o pedido pode confirmar.",
+  "Só quem abriu a votação (e ainda pode criar eventos) pode reabrir.": "Só quem fez o pedido pode reabrir.",
 };
 
 export function traduzirErroVotacao(mensagem: string): string {

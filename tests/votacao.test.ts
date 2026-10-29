@@ -99,6 +99,7 @@ describe("traduzirErroVotacao", () => {
     expect(traduzirErroVotacao("Esta votação já foi confirmada.")).toBe("Este pedido já foi confirmado.");
     expect(traduzirErroVotacao("Só a diretoria abre votações.")).toBe("Só a diretoria pede disponibilidade.");
     expect(traduzirErroVotacao("Só quem abriu a votação (e ainda é da diretoria) pode confirmar.")).toBe("Só quem fez o pedido (e ainda é da diretoria) pode confirmar.");
+    expect(traduzirErroVotacao("Só quem abriu a votação (e ainda pode criar eventos) pode confirmar.")).toBe("Só quem fez o pedido pode confirmar.");
   });
 
   it("deixa como está o que não menciona votação", () => {
