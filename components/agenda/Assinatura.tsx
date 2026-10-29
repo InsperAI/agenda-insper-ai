@@ -21,7 +21,7 @@ export default function Assinatura({ token: tokenInicial }: { token: string | nu
   }, []);
 
   if (!token) {
-    return <p className="rounded-lg bg-perigo-fundo px-3 py-2 text-[0.875rem] text-perigo">Seu link de assinatura ainda não foi gerado. Peça a um admin para conferir seu cadastro.</p>;
+    return <p className="rounded-lg bg-perigo-fundo px-3 py-2 text-[0.875rem] text-perigo">Seu link ainda não foi gerado. Peça a um admin para conferir seu cadastro.</p>;
   }
 
   const https = `${origem}/api/feed/${token}`;
@@ -45,7 +45,7 @@ export default function Assinatura({ token: tokenInicial }: { token: string | nu
     setGirando(false);
     if (error || !data) return setAviso(error?.message ?? "Não foi possível gerar o link.");
     setToken(data);
-    setAviso("Novo link gerado. Assine de novo nos seus calendários.");
+    setAviso("Novo link gerado. Conecte de novo nos seus calendários.");
   }
 
   return (

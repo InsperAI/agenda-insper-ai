@@ -23,7 +23,7 @@ export default async function Entrar({ searchParams }: { searchParams: Promise<{
           <h2 className="font-display text-[clamp(1.5rem,1.1rem+1.4vw,2.25rem)] leading-[1.08] font-semibold tracking-[-0.035em] text-ia-petroleo">
             A semana inteira da Insper AI, num lugar só.
           </h2>
-          <p className="t-apoio mt-3">Reuniões, aulas, prazos e eventos, e cada um vê o que é do seu nível. Assine e tudo aparece no seu Google Agenda.</p>
+          <p className="t-apoio mt-3">Reuniões, aulas, prazos e eventos, e cada um vê o que é do seu nível. Conecte e tudo aparece no seu Google Agenda.</p>
         </div>
         <div className="w-full max-w-xl rounded-2xl border border-ia-regua bg-ia-papel p-4 shadow-pop sm:p-5">
           <CenaSemana />

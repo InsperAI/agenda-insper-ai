@@ -6,7 +6,7 @@ import { NextResponse, type NextRequest } from "next/server";
  * manda quem não está logado para /entrar nas rotas protegidas. A checagem de
  * "é membro?" fica no layout de (app), porque precisa consultar o banco.
  */
-const PROTEGIDAS = ["/agenda", "/admin", "/assinar", "/disponibilidade"];
+const PROTEGIDAS = ["/agenda", "/admin", "/conectar", "/disponibilidade"];
 
 export async function proxy(request: NextRequest) {
   let response = NextResponse.next({ request });

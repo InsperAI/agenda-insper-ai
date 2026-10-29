@@ -24,7 +24,7 @@ const SECOES: { titulo: string; texto: string }[] = [
   {
     titulo: "Feed de calendário",
     texto:
-      "Cada membro tem um link de feed .ics pessoal e secreto. Quem tiver o link consegue ler a agenda; se ele vazar, gere um novo em Assinar.",
+      "Cada membro tem um link de feed .ics pessoal e secreto. Quem tiver o link consegue ler a agenda; se ele vazar, gere um novo em Conectar.",
   },
   {
     titulo: "Seus direitos",

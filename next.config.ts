@@ -7,6 +7,8 @@ const nextConfig: NextConfig = {
     return [
       { source: "/votacoes", destination: "/disponibilidade", permanent: true },
       { source: "/votacoes/:caminho*", destination: "/disponibilidade/:caminho*", permanent: true },
+      // "Assinar" virou "Conectar".
+      { source: "/assinar", destination: "/conectar", permanent: true },
     ];
   },
 };

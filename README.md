@@ -69,7 +69,7 @@ Para adicionar as pessoas: mande o link do site; quem não está cadastrado cai 
 
 **Permissões:** só e-mails em `members` entram. Cada evento tem `publico` (membro e/ou trainee; a diretoria sempre vê); a RLS só devolve o que o nível da pessoa pode ver, e só a diretoria cria/edita/exclui. Só admins alteram `members`, e admin precisa ser da diretoria (constraint). O último admin não pode ser removido (trigger). `created_by/updated_by` são preenchidos por trigger, não pelo cliente.
 
-**Feed:** `GET /api/feed/<token>` é público, autenticado só pelo token (48 hex) do membro. Como usa a service role (sem RLS), filtra pelo nível do dono do token com `visiveisPara()`. Em *Assinar* dá para copiar, abrir no Google/Apple e gerar um novo token.
+**Feed:** `GET /api/feed/<token>` é público, autenticado só pelo token (48 hex) do membro. Como usa a service role (sem RLS), filtra pelo nível do dono do token com `visiveisPara()`. Em *Conectar* dá para copiar, abrir no Google/Apple e gerar um novo token.
 
 ## 4. Verificação manual
 
