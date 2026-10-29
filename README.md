@@ -1,8 +1,10 @@
 # Agenda · Insper AI
 
-Calendário compartilhado da Insper AI: eventos, aulas, reuniões e prazos. Três níveis: a **diretoria** cria e edita tudo e marca, em cada evento, se **membros** e/ou **trainees** também veem; os dois só veem o que foi liberado para eles. Quem entra com o Google sem estar cadastrado pede acesso pelo site e um admin aprova. Cada alteração fica registrada com quem fez. Modo claro/escuro. Feed `.ics` por pessoa para assinar no Google Agenda / Apple Calendar.
+Calendário compartilhado da Insper AI: eventos, aulas, reuniões e prazos. Três níveis: a **diretoria** cria e edita tudo e marca, em cada evento, se **membros** e/ou **trainees** também veem; **membros** criam e editam os próprios eventos; **trainees** só veem. **Pedidos de disponibilidade** (estilo when2meet) com link curto e prévia no WhatsApp. Quem entra sem estar cadastrado pede acesso pelo site e um admin aprova. Login com Google ou com código no e-mail. Modo claro/escuro, instalável no celular (PWA). Feed `.ics` por pessoa para conectar ao Google Agenda / Apple Calendar.
 
-**Stack:** Next.js 16 (App Router) na Vercel · Supabase (Postgres + Auth com Google) · Tailwind v4 com os tokens do Playbook de Marca.
+> **Estado atual, infraestrutura e pendências:** [`docs/estado.md`](docs/estado.md). **Convenções de trabalho:** [`CLAUDE.md`](CLAUDE.md).
+
+**Stack:** Next.js 16 (App Router) na Vercel (região `gru1`) · Supabase em São Paulo (Postgres + Auth com Google e OTP por e-mail) · Tailwind v4 com os tokens do Playbook de Marca · Motion, GSAP e lucide-react na interface.
 
 ---
 
@@ -11,14 +13,14 @@ Calendário compartilhado da Insper AI: eventos, aulas, reuniões e prazos. Trê
 ```bash
 npm install
 cp .env.local.example .env.local   # preencha com as chaves do passo 2
-npm run dev                        # http://localhost:3000
-npm test                           # testes de recorrência e .ics
+npm run dev -- -p 3002             # http://localhost:3002 (a porta precisa estar nas Redirect URLs do Supabase)
+npm test                           # testes da lógica pura (recorrência, .ics, níveis, disponibilidade, login…)
 npm run lint && npm run typecheck
 ```
 
 ## 2. Configurar as contas (uma vez)
 
-Nenhuma das contas existe ainda. A ordem importa: Supabase → Google Cloud → Vercel.
+Já está tudo configurado em produção (ver `docs/estado.md`); estes passos servem para recriar do zero. A ordem importa: Supabase → Google Cloud → Vercel.
 
 ### A. GitHub
 1. Crie um repositório **privado** `agenda-insper-ai`.
@@ -40,10 +42,13 @@ Nenhuma das contas existe ainda. A ordem importa: Supabase → Google Cloud → 
 3. **Credentials → Create credentials → OAuth client ID → Web application**. Em *Authorized redirect URIs* cole **só** a Callback URL do Supabase (B.6).
 4. Copie *Client ID* e *Client secret* → cole no provider Google do Supabase → **Save**.
 
+### C2. Login por código no e-mail (para quem não tem Google)
+Precisa de SMTP próprio (o envio padrão do Supabase só entrega para o time do projeto). Passo a passo e template do e-mail em `docs/estado.md` → Pendências.
+
 Pronto para testar local: `npm run dev` → `/entrar` → Google → `/agenda`.
 
 ### D. Vercel (vercel.com, plano Hobby)
-1. Entre com o GitHub → **Add New → Project** → importe `agenda-insper-ai`. Framework: Next.js.
+1. Entre com o GitHub → **Add New → Project** → importe `agenda-insper-ai`. Framework: Next.js. O `vercel.json` já fixa as funções em `gru1` (perto do banco) e o cron diário.
 2. **Environment Variables** (Production e Preview): as cinco do `.env.local.example`. `NEXT_PUBLIC_SITE_URL` = URL de produção; `CRON_SECRET` = qualquer string longa aleatória.
 3. **Deploy**. Copie o domínio gerado.
 4. Volte ao Supabase (B.5): *Site URL* = domínio da Vercel; confirme que ele está nas *Redirect URLs*. Na Vercel, ajuste `NEXT_PUBLIC_SITE_URL` se mudou e faça **Redeploy**.
@@ -59,6 +64,10 @@ Para adicionar as pessoas: mande o link do site; quem não está cadastrado cai 
 | Pedidos de disponibilidade (estilo when2meet; no código e no banco, `votacao`) e convidados individuais em eventos | `supabase/migrations/0004_votacoes.sql`, `lib/votacao.ts`, `components/votacao/` |
 | Público por evento (`publico`) e pedidos de acesso | `supabase/migrations/0003_publico_e_pedidos.sql`, `app/sem-acesso/`, `components/admin/PedidosAcesso.tsx` |
 | Tema claro/escuro (`light-dark()` + cookie `tema`) | `app/globals.css`, `lib/tema.ts` |
+| Link curto `/d/<codigo>` com prévia (Open Graph) | `app/d/[codigo]/`, `lib/og.tsx`, `supabase/migrations/0006_link_curto.sql` |
+| Membros criam eventos / pedidos | `supabase/migrations/0007_membros_criam.sql`, `0008_membros_pedem_disponibilidade.sql`, `lib/niveis.ts` |
+| Login com código no e-mail | `app/entrar/EntrarComEmail.tsx`, `lib/login.ts` |
+| Celular: PWA, barra de abas, folhas, gestos | `app/manifest.ts`, `components/layout/BarraAbas.tsx`, `components/ui/Dialogo.tsx`, `app/globals.css` |
 | Portão de membro (logado mas fora da lista → `/sem-acesso`) | `app/(app)/layout.tsx`, `proxy.ts` |
 | Expansão de séries (semanal/quinzenal/mensal + exceções) | `lib/recorrencia.ts` |
 | Serializador `.ics` (RRULE / EXDATE / RECURRENCE-ID) | `lib/ics.ts`, `app/api/feed/[token]/route.ts` |
