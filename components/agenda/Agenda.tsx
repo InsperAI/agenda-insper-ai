@@ -22,7 +22,8 @@ import {
 } from "@/lib/eventos";
 import { agoraSP, chaveDia, deChaveDia, gradeDoMes, inicioDaSemana, inicioDoDia, inicioDoMes } from "@/lib/fuso";
 import { expandir, type Ocorrencia } from "@/lib/recorrencia";
-import type { Categoria, EventoRow } from "@/lib/supabase/tipos";
+import { podeCriarEvento, podeMexerNoEvento } from "@/lib/niveis";
+import type { Categoria, EventoRow, Nivel } from "@/lib/supabase/tipos";
 import { montarUrl, type Vista } from "@/lib/url";
 import BotaoFlutuante from "./BotaoFlutuante";
 import CabecalhoAgenda from "./CabecalhoAgenda";
@@ -91,8 +92,14 @@ function mensagemErro(e: unknown): string {
   return e instanceof Error ? e.message : "Algo deu errado. Tente de novo.";
 }
 
-/** `podeEditar` (só diretoria) liga criar/editar/excluir; a RLS garante o mesmo no banco. */
-export default function Agenda({ vistaInicial, ancoraInicial, podeEditar }: { vistaInicial: Vista; ancoraInicial: string; podeEditar: boolean }) {
+/**
+ * `eu` decide o que aparece: diretoria e membros criam; a diretoria mexe em
+ * tudo e o membro só no que criou (lib/niveis). A RLS (0007) garante o mesmo.
+ */
+export default function Agenda({ vistaInicial, ancoraInicial, eu }: { vistaInicial: Vista; ancoraInicial: string; eu: { id: string; nivel: Nivel } }) {
+  const podeEditar = podeCriarEvento(eu.nivel);
+  // Série: vale quem criou o mestre (o membro só cria ocorrências avulsas nas séries dele).
+  const podeMexer = (o: Ocorrencia) => podeMexerNoEvento(eu, (o.mestre ?? o.evento).created_by);
   const [vista, setVista] = useState<Vista>(vistaInicial);
   const [ancora, setAncora] = useState(ancoraInicial);
   const [hoje] = useState(() => chaveDia(new Date()));
@@ -353,7 +360,13 @@ export default function Agenda({ vistaInicial, ancoraInicial, podeEditar }: { vi
         </motion.div>
       </AnimatePresence>
 
-      <PainelEvento occ={selecionada} membros={membros} aoFechar={() => setSelecionada(null)} aoEditar={podeEditar ? pedirEditar : undefined} aoExcluir={podeEditar ? pedirExcluir : undefined} />
+      <PainelEvento
+        occ={selecionada}
+        membros={membros}
+        aoFechar={() => setSelecionada(null)}
+        aoEditar={selecionada && podeMexer(selecionada) ? pedirEditar : undefined}
+        aoExcluir={selecionada && podeMexer(selecionada) ? pedirExcluir : undefined}
+      />
 
       {form && (
         <FormularioEvento
@@ -364,6 +377,7 @@ export default function Agenda({ vistaInicial, ancoraInicial, podeEditar }: { vi
           salvando={salvando}
           aoSalvar={salvar}
           aoFechar={() => !salvando && setFormulario(null)}
+          travarMembros={eu.nivel === "membro"}
         />
       )}
 

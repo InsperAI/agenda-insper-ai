@@ -26,7 +26,7 @@ Nenhuma das contas existe ainda. A ordem importa: Supabase → Google Cloud → 
 
 ### B. Supabase (supabase.com, plano Free)
 1. **New project** → região `South America (São Paulo)`. Guarde a senha do banco.
-2. **SQL Editor** → cole `supabase/migrations/0001_init.sql` inteiro → **Run**. Depois, uma query nova para cada uma, em ordem: `0002_niveis.sql`, `0003_publico_e_pedidos.sql`, `0004_votacoes.sql`, `0005_diretoria_acompanha.sql` e `0006_link_curto.sql` → **Run**. Cada migração roda uma vez só.
+2. **SQL Editor** → cole `supabase/migrations/0001_init.sql` inteiro → **Run**. Depois, uma query nova para cada uma, em ordem: `0002_niveis.sql`, `0003_publico_e_pedidos.sql`, `0004_votacoes.sql`, `0005_diretoria_acompanha.sql`, `0006_link_curto.sql` e `0007_membros_criam.sql` → **Run**. Cada migração roda uma vez só.
 3. Abra `supabase/seed.sql`, troque o e-mail pelo da **sua conta Google** e o nome, cole no SQL Editor → **Run**. Você é o primeiro admin.
 4. **Project Settings → API**: copie *Project URL*, a chave *anon / publishable* e a chave *service_role / secret* para o `.env.local`.
 5. **Authentication → URL Configuration**:
@@ -67,7 +67,7 @@ Para adicionar as pessoas: mande o link do site; quem não está cadastrado cai 
 
 **Recorrência:** uma linha "mestre" guarda `freq` + `until`. Editar/excluir *só esta ocorrência* cria uma linha filha com `series_id` + `original_start` (ou `cancelled = true`). Editar *toda a série* atualiza o mestre e propaga título/local/etc. para as filhas; mudar horário ou repetição apaga as filhas (o app avisa antes).
 
-**Permissões:** só e-mails em `members` entram. Cada evento tem `publico` (membro e/ou trainee; a diretoria sempre vê); a RLS só devolve o que o nível da pessoa pode ver, e só a diretoria cria/edita/exclui. Só admins alteram `members`, e admin precisa ser da diretoria (constraint). O último admin não pode ser removido (trigger). `created_by/updated_by` são preenchidos por trigger, não pelo cliente.
+**Permissões:** só e-mails em `members` entram. Cada evento tem `publico` (membro e/ou trainee; a diretoria sempre vê); a RLS só devolve o que o nível da pessoa pode ver, e a diretoria cria/edita/exclui tudo, membros só os próprios eventos (sempre visíveis para membros) e trainees só veem (0007). Só admins alteram `members`, e admin precisa ser da diretoria (constraint). O último admin não pode ser removido (trigger). `created_by/updated_by` são preenchidos por trigger, não pelo cliente.
 
 **Feed:** `GET /api/feed/<token>` é público, autenticado só pelo token (48 hex) do membro. Como usa a service role (sem RLS), filtra pelo nível do dono do token com `visiveisPara()`. Em *Conectar* dá para copiar, abrir no Google/Apple e gerar um novo token.
 

@@ -49,6 +49,7 @@ export default function FormularioEvento({
   salvando,
   aoSalvar,
   aoFechar,
+  travarMembros = false,
 }: {
   aberto: boolean;
   modo: ModoFormulario;
@@ -56,6 +57,8 @@ export default function FormularioEvento({
   salvando: boolean;
   aoSalvar: (dados: DadosEvento) => void;
   aoFechar: () => void;
+  /** Membro criando/editando: "Membros" fica sempre marcado em "Quem vê" (RLS 0007 exige). */
+  travarMembros?: boolean;
 }) {
   const [title, setTitle] = useState(inicial.title ?? "");
   const [category, setCategory] = useState<Categoria>(inicial.category ?? "evento");
@@ -67,7 +70,10 @@ export default function FormularioEvento({
   const [description, setDescription] = useState(inicial.description ?? "");
   const [freq, setFreq] = useState<FreqOuNunca>(inicial.freq ?? "nunca");
   const [until, setUntil] = useState(inicial.until ?? fimDoSemestre(inicial.inicio));
-  const [publico, setPublico] = useState<NivelPublico[]>(inicial.publico ?? []);
+  const [publico, setPublico] = useState<NivelPublico[]>(() => {
+    const p = inicial.publico ?? [];
+    return travarMembros && !p.includes("membro") ? alternarPublico(p, "membro") : p;
+  });
   const [erro, setErro] = useState<string | null>(null);
 
   const mostraRecorrencia = modo !== "editar-esta";
@@ -195,14 +201,17 @@ export default function FormularioEvento({
               </span>
               {NIVEIS_PUBLICO.map((n) => {
                 const on = publico.includes(n.id);
+                const travado = travarMembros && n.id === "membro";
                 return (
                   <button
                     key={n.id}
                     type="button"
                     role="checkbox"
                     aria-checked={on}
+                    disabled={travado}
+                    title={travado ? "Eventos criados por membros são sempre visíveis para membros" : undefined}
                     onClick={() => setPublico((p) => alternarPublico(p, n.id))}
-                    className={`inline-flex h-9 items-center gap-2 rounded-full border px-3.5 text-[0.875rem] transition-colors ${
+                    className={`inline-flex h-9 items-center gap-2 rounded-full border px-3.5 text-[0.875rem] transition-colors disabled:opacity-80 ${
                       on ? "border-ia-petroleo bg-ia-petroleo text-ia-papel" : "border-ia-regua text-ia-corpo hover:bg-ia-nevoa"
                     }`}
                   >

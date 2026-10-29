@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { alternarPublico, ehNivel, frasePublico, podeEditar, podeVer, visiveisPara } from "@/lib/niveis";
+import { alternarPublico, ehNivel, frasePublico, podeCriarEvento, podeEditar, podeMexerNoEvento, podeVer, visiveisPara } from "@/lib/niveis";
 import type { Nivel, NivelPublico } from "@/lib/supabase/tipos";
 
 describe("podeVer", () => {
@@ -81,5 +81,21 @@ describe("ehNivel", () => {
     expect(ehNivel("membro")).toBe(true);
     expect(ehNivel("admin")).toBe(false);
     expect(ehNivel("toString")).toBe(false);
+  });
+});
+
+describe("eventos: quem cria e quem mexe (0007)", () => {
+  it("diretoria e membros criam; trainees não", () => {
+    expect(podeCriarEvento("diretoria")).toBe(true);
+    expect(podeCriarEvento("membro")).toBe(true);
+    expect(podeCriarEvento("trainee")).toBe(false);
+  });
+
+  it("diretoria mexe em tudo; membro só no que criou; trainee em nada", () => {
+    expect(podeMexerNoEvento({ nivel: "diretoria", id: "d" }, "m")).toBe(true);
+    expect(podeMexerNoEvento({ nivel: "membro", id: "m" }, "m")).toBe(true);
+    expect(podeMexerNoEvento({ nivel: "membro", id: "m" }, "d")).toBe(false);
+    expect(podeMexerNoEvento({ nivel: "membro", id: "m" }, null)).toBe(false);
+    expect(podeMexerNoEvento({ nivel: "trainee", id: "t" }, "t")).toBe(false);
   });
 });

@@ -28,9 +28,23 @@ export function podeVer(nivel: Nivel, publico: readonly NivelPublico[]): boolean
   return nivel === "diretoria" || publico.includes(nivel);
 }
 
-/** Só a diretoria cria, edita e exclui eventos. */
+/** Diretoria: edita qualquer evento, abre pedidos de disponibilidade, acompanha tudo. */
 export function podeEditar(nivel: Nivel): boolean {
   return nivel === "diretoria";
+}
+
+/** Quem cria eventos: diretoria e membros (0007). Trainees só veem. */
+export function podeCriarEvento(nivel: Nivel): boolean {
+  return nivel === "diretoria" || nivel === "membro";
+}
+
+/**
+ * Editar/excluir um evento: a diretoria mexe em tudo; um membro só no que ele
+ * criou (`criadoPor` do mestre, se for série). Mesma regra da RLS em 0007.
+ */
+export function podeMexerNoEvento(membro: { nivel: Nivel; id: string }, criadoPor: string | null): boolean {
+  if (membro.nivel === "diretoria") return true;
+  return membro.nivel === "membro" && criadoPor !== null && criadoPor === membro.id;
 }
 
 /**
