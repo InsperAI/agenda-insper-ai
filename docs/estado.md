@@ -59,10 +59,15 @@ Template do e-mail (Magic Link e Confirm signup):
 <p>O código vale por 1 hora. Se você não pediu, pode ignorar este e-mail.</p>
 ```
 
+## Desempenho
+
+- Sessão conferida com `auth.getClaims()` (JWT ES256 verificado localmente) em `proxy.ts`, `lib/membro.ts` e `/d/[codigo]` — sem ida ao servidor de Auth por navegação. Se as chaves de assinatura do Supabase voltarem a ser simétricas, isso volta a custar uma ida.
+- `useEventos` guarda os períodos em cache (`lib/cache.ts`), mostra na hora e confirma com o banco; pré-carrega o mês/semana vizinhos (`lib/periodo.ts`).
+
 ## Ideias levantadas (não feitas)
 
 - **Notificações push** (PWA no iPhone suporta): avisar pedido de disponibilidade pendente/confirmado. Precisa de serviço de push e chaves VAPID.
-- **Menos uma ida ao Supabase por navegação:** trocar `auth.getUser()` por `auth.getClaims()` (verifica o JWT localmente) em `proxy.ts`/`lib/membro.ts`, se ainda parecer lento.
+- **Eventos já na primeira resposta:** buscar o período inicial no servidor e mandar junto com o HTML (hoje a agenda busca no navegador depois de carregar). Medir antes com Vercel Speed Insights.
 - **"Copiar link" sempre com o domínio de produção**, mesmo rodando local (o usuário dispensou por ora).
 - **Domínio próprio** (ex.: `agenda.insperai.com.br`) na Vercel; tela do Google mostraria esse domínio em vez de `…supabase.co` só com domínio customizado no Supabase (pago).
 - Trainees criarem eventos / pedidos: hoje não podem (decisão do usuário).

@@ -11,9 +11,9 @@ export type MembroAtual = Pick<MembroRow, "id" | "email" | "name" | "cargo" | "n
  */
 export const obterMembroAtual = cache(async (): Promise<{ user: { id: string; email: string; nome: string } | null; membro: MembroAtual | null }> => {
   const supabase = await supabaseServidor();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // Token conferido localmente (ver proxy.ts); a RLS confere de novo no banco.
+  const { data } = await supabase.auth.getClaims();
+  const user = data?.claims;
   if (!user?.email) return { user: null, membro: null };
 
   const { data: membro } = await supabase
@@ -24,5 +24,5 @@ export const obterMembroAtual = cache(async (): Promise<{ user: { id: string; em
 
   // Nome do perfil Google, para sugerir no pedido de acesso.
   const nome = typeof user.user_metadata?.full_name === "string" ? user.user_metadata.full_name : "";
-  return { user: { id: user.id, email: user.email, nome }, membro: membro ?? null };
+  return { user: { id: user.sub, email: user.email, nome }, membro: membro ?? null };
 });

@@ -40,10 +40,8 @@ export default async function LinkCurto({ params }: Props) {
 
   const destino = `/disponibilidade/${resumo.id}`;
   const supabase = await supabaseServidor();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (user) redirect(destino);
+  const { data } = await supabase.auth.getClaims();
+  if (data?.claims) redirect(destino);
 
   return (
     <main className="flex flex-1 flex-col px-6 py-8 sm:px-10">

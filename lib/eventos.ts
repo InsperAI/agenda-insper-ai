@@ -3,6 +3,8 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { supabaseNavegador, type ClienteSupabase } from "./supabase/client";
 import type { Categoria, EventoRow, Frequencia, MembroRow, NivelPublico } from "./supabase/tipos";
+import { criarCache } from "./cache";
+import type { Intervalo } from "./periodo";
 import type { Ocorrencia } from "./recorrencia";
 
 /** O que o formulário entrega. Datas em ISO (instantes). */
@@ -23,23 +25,33 @@ export type DadosEvento = {
 
 /* ── Leitura ──────────────────────────────────────────────────────────────── */
 
+/** Períodos já buscados (o atual, os vizinhos e os visitados há pouco). */
+const CACHE_EVENTOS = criarCache<EventoRow[]>(12);
+
+// O dono entra na chave: se outra pessoa entrar na mesma aba, não vê o cache de quem saiu.
+const faixaDe = (dono: string, { ini, fim }: Intervalo) => `${dono}|${ini.toISOString()}|${fim.toISOString()}`;
+
 /**
- * Linhas de `events_in_range` para [ini, fim). Refaz a consulta quando o
- * intervalo muda, quando `recarregar()` é chamado e quando o Realtime avisa
- * que a tabela mudou (outro membro editou).
+ * Linhas de `events_in_range` para [ini, fim). Mostra na hora o que já está em
+ * cache e confirma com o banco por trás; depois de carregar, busca os períodos
+ * vizinhos para a troca de mês/semana ser instantânea. Refaz a consulta quando
+ * `recarregar()` é chamado e quando o Realtime avisa que a tabela mudou.
  */
-export function useEventos(ini: Date, fim: Date) {
+export function useEventos(intervalo: Intervalo, vizinhos: Intervalo[], dono: string) {
   const sb = useMemo(() => supabaseNavegador(), []);
-  const [linhas, setLinhas] = useState<EventoRow[]>([]);
+  const [resultado, setResultado] = useState<{ chave: string; linhas: EventoRow[] } | null>(null);
   const [erro, setErro] = useState<string | null>(null);
   const [versao, setVersao] = useState(0);
-  const [chaveCarregada, setChaveCarregada] = useState<string | null>(null);
 
-  const iniIso = ini.toISOString();
-  const fimIso = fim.toISOString();
-  const chave = `${iniIso}|${fimIso}|${versao}`;
+  const faixa = faixaDe(dono, intervalo);
+  const chave = `${faixa}|${versao}`;
+  const iniIso = intervalo.ini.toISOString();
+  const fimIso = intervalo.fim.toISOString();
 
-  const recarregar = useCallback(() => setVersao((v) => v + 1), []);
+  const recarregar = useCallback(() => {
+    CACHE_EVENTOS.limpar();
+    setVersao((v) => v + 1);
+  }, []);
 
   useEffect(() => {
     let ativo = true;
@@ -47,16 +59,30 @@ export function useEventos(ini: Date, fim: Date) {
       if (!ativo) return;
       if (error) {
         setErro(error.message);
-      } else {
-        setErro(null);
-        setLinhas(data ?? []);
+        setResultado((prev) => ({ chave, linhas: prev?.linhas ?? [] }));
+        return;
       }
-      setChaveCarregada(chave);
+      const linhas = data ?? [];
+      CACHE_EVENTOS.guardar(faixa, linhas);
+      setErro(null);
+      setResultado({ chave, linhas });
     });
     return () => {
       ativo = false;
     };
-  }, [sb, iniIso, fimIso, chave]);
+  }, [sb, iniIso, fimIso, faixa, chave]);
+
+  const pronto = resultado?.chave === chave;
+  useEffect(() => {
+    if (!pronto) return;
+    for (const v of vizinhos) {
+      const f = faixaDe(dono, v);
+      if (CACHE_EVENTOS.ler(f)) continue;
+      sb.rpc("events_in_range", { p_ini: v.ini.toISOString(), p_fim: v.fim.toISOString() }).then(({ data, error }) => {
+        if (!error && data) CACHE_EVENTOS.guardar(f, data);
+      });
+    }
+  }, [sb, pronto, vizinhos, dono]);
 
   useEffect(() => {
     const canal = sb
@@ -68,17 +94,21 @@ export function useEventos(ini: Date, fim: Date) {
     };
   }, [sb, recarregar]);
 
-  return { linhas, carregando: chaveCarregada !== chave, erro, recarregar, sb };
+  const emCache = pronto ? undefined : CACHE_EVENTOS.ler(faixa);
+  const linhas = pronto ? resultado.linhas : (emCache ?? resultado?.linhas ?? []);
+  return { linhas, carregando: !pronto && !emCache, erro, recarregar, sb };
 }
+
+export type MembroResumo = Pick<MembroRow, "id" | "name">;
 
 /** Mapa id → membro, para "criado por". */
 export function useMembros() {
   const sb = useMemo(() => supabaseNavegador(), []);
-  const [membros, setMembros] = useState<Map<string, MembroRow>>(new Map());
+  const [membros, setMembros] = useState<Map<string, MembroResumo>>(new Map());
   useEffect(() => {
     let ativo = true;
     sb.from("members")
-      .select("*")
+      .select("id,name")
       .then(({ data }) => {
         if (ativo && data) setMembros(new Map(data.map((m) => [m.id, m])));
       });

@@ -10,7 +10,7 @@ import { deChaveDia } from "@/lib/fuso";
 import { serializarOcorrencia } from "@/lib/ics";
 import { frasePublico } from "@/lib/niveis";
 import { ehDeSerie, type Ocorrencia } from "@/lib/recorrencia";
-import type { MembroRow } from "@/lib/supabase/tipos";
+import type { MembroResumo } from "@/lib/eventos";
 
 function Linha({ icone, children }: { icone: ReactNode; children: ReactNode }) {
   return (
@@ -47,7 +47,7 @@ export default function PainelEvento({
   aoExcluir,
 }: {
   occ: Ocorrencia | null;
-  membros: Map<string, MembroRow>;
+  membros: Map<string, MembroResumo>;
   aoFechar: () => void;
   /** Ausentes = só leitura (membro/trainee). */
   aoEditar?: (o: Ocorrencia) => void;

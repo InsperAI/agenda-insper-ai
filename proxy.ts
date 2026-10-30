@@ -24,10 +24,10 @@ export async function proxy(request: NextRequest) {
     },
   });
 
-  // getUser() valida o token no servidor do Supabase e renova se preciso.
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // getClaims() renova o token se preciso e confere a assinatura localmente
+  // (chaves assimétricas), sem a ida ao servidor de Auth que o getUser() faz.
+  const { data } = await supabase.auth.getClaims();
+  const user = data?.claims ?? null;
 
   const { pathname } = request.nextUrl;
   const protegida = PROTEGIDAS.some((p) => pathname === p || pathname.startsWith(`${p}/`));

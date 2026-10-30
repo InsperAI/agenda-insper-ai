@@ -1,6 +1,6 @@
 "use client";
 
-import { addDays, addHours, addMonths, addWeeks, setHours } from "date-fns";
+import { addDays, addHours, setHours } from "date-fns";
 import { AnimatePresence, motion, type Variants } from "motion/react";
 import { useCallback, useEffect, useMemo, useRef, useState, type TouchEvent } from "react";
 import Aviso from "@/components/ui/Aviso";
@@ -20,10 +20,11 @@ import {
   vaiDescartarFilhas,
   type DadosEvento,
 } from "@/lib/eventos";
-import { agoraSP, chaveDia, deChaveDia, gradeDoMes, inicioDaSemana, inicioDoDia, inicioDoMes } from "@/lib/fuso";
+import { agoraSP, chaveDia, deChaveDia, inicioDaSemana, inicioDoMes } from "@/lib/fuso";
 import { expandir, type Ocorrencia } from "@/lib/recorrencia";
 import { podeCriarEvento, podeMexerNoEvento } from "@/lib/niveis";
 import type { Categoria, EventoRow, Nivel } from "@/lib/supabase/tipos";
+import { ancoraVizinha, intervaloDaVista } from "@/lib/periodo";
 import { montarUrl, type Vista } from "@/lib/url";
 import BotaoFlutuante from "./BotaoFlutuante";
 import CabecalhoAgenda from "./CabecalhoAgenda";
@@ -150,20 +151,17 @@ export default function Agenda({ vistaInicial, ancoraInicial, eu }: { vistaInici
 
   /* ── Intervalo visível e dados ─────────────────────────────────────────── */
   const dataAncora = useMemo(() => deChaveDia(ancora), [ancora]);
-  const intervalo = useMemo(() => {
-    if (vista === "mes") {
-      const grade = gradeDoMes(dataAncora);
-      return { ini: addDays(grade[0], -7), fim: addDays(grade[41], 8) };
-    }
-    if (vista === "semana") {
-      const ini = inicioDaSemana(dataAncora);
-      return { ini: addDays(ini, -7), fim: addDays(ini, 14) };
-    }
-    const ini = inicioDoDia(new Date());
-    return { ini, fim: addDays(ini, 60) };
-  }, [vista, dataAncora]);
+  const intervalo = useMemo(() => intervaloDaVista(vista, dataAncora), [vista, dataAncora]);
+  const vizinhos = useMemo(
+    () =>
+      [-1, 1].flatMap((delta) => {
+        const a = ancoraVizinha(vista, dataAncora, delta);
+        return a ? [intervaloDaVista(vista, a)] : [];
+      }),
+    [vista, dataAncora],
+  );
 
-  const { linhas, carregando, erro, recarregar, sb } = useEventos(intervalo.ini, intervalo.fim);
+  const { linhas, carregando, erro, recarregar, sb } = useEventos(intervalo, vizinhos, eu.id);
   const membros = useMembros();
 
   const ocorrencias = useMemo(() => {
@@ -187,9 +185,10 @@ export default function Agenda({ vistaInicial, ancoraInicial, eu }: { vistaInici
   const [direcao, setDirecao] = useState(0);
   const navegar = useCallback(
     (delta: number) => {
+      const a = ancoraVizinha(vista, dataAncora, delta);
+      if (!a) return;
       setDirecao(delta);
-      if (vista === "mes") setAncora(chaveDia(addMonths(inicioDoMes(dataAncora), delta)));
-      else if (vista === "semana") setAncora(chaveDia(addWeeks(inicioDaSemana(dataAncora), delta)));
+      setAncora(chaveDia(a));
     },
     [vista, dataAncora],
   );
