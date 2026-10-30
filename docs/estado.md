@@ -12,7 +12,7 @@ _Atualizado em 29/10/2026. Atualize este arquivo quando algo daqui mudar._
 | Peça | Detalhe |
 |---|---|
 | Supabase | Projeto `agenda-insper-ai` (ref `tddcdurvejczrnntwoeb`), org "InsperAI", plano Free, região São Paulo. Chaves novas (`sb_publishable_…` / `sb_secret_…`). |
-| Auth | Google (OAuth publicado, "In production"); e-mail com código (OTP) **ainda não ativado** — ver pendências. Redirect URLs: produção + `http://localhost:3001/**` (adicione `http://localhost:3002/**` se ainda não estiver, para logar no dev local). |
+| Auth | Google (OAuth publicado, "In production"); e-mail com código (OTP, 6 dígitos, vale 1 h) **ativo desde 30/10/2026** — SMTP do Gmail `agendainsperai@gmail.com` (senha de app; 2FA por passkey), templates "Confirm sign up" e "Magic link or OTP" com `{{ .Token }}`. Redirect URLs: produção + `http://localhost:3001/**` (adicione `http://localhost:3002/**` se ainda não estiver, para logar no dev local). |
 | Google Cloud | Projeto "Agenda Insper AI", Google Auth Platform publicado; cliente OAuth "Agenda Supabase" com o callback do Supabase. |
 | Vercel | Time `chequer70117-gmailcom` (Hobby), projeto `agenda-insper-ai`. Funções em `gru1` (`vercel.json`). Cron diário `/api/ping` mantém o Supabase Free acordado. 5 variáveis de ambiente (as do `.env.local.example`). |
 | Domínios | `insperai.com.br` = Google Workspace; `insperai.com` = Microsoft; `al.insper.edu.br` (alunos) = Microsoft 365 → por isso o login por código existe. |
@@ -41,16 +41,11 @@ Todas de `0001` a `0008` (rodadas à mão no SQL Editor, em ordem):
 
 ## Pendências
 
-1. **Ativar o login por código no e-mail** (código já está no ar; falta configurar). Vai usar `contato@insperai.com.br` (Google Workspace); o usuário está esperando o dono da conta.
-   1. Na conta `contato@`: ativar Verificação em 2 etapas → criar **senha de app** em myaccount.google.com/apppasswords. Se não aparecer, o admin do Workspace precisa permitir (Admin → Segurança → Autenticação → Verificação em 2 etapas). Se `contato@` for alias/grupo (não loga sozinho), não dá: usar uma conta real.
-   2. Supabase → Authentication → Emails → **SMTP Settings** → custom SMTP: host `smtp.gmail.com`, porta `465`, usuário e remetente `contato@insperai.com.br`, nome "Agenda Insper AI", senha = senha de app.
-   3. Supabase → Authentication → Sign In / Providers → **Email**: ativar (manter "Confirm email").
-   4. Templates **Magic Link** e **Confirm signup** com o código: assunto "Seu código da Agenda Insper AI", corpo com `{{ .Token }}` (ver mensagem modelo abaixo).
-   5. Testar em janela anônima. Quem depende disso: Beatriz Cury (`@icloud.com`), Maria Sofia (`@al.insper.edu.br`).
+1. **Trocar o remetente para `contato@insperai.com.br`** (opcional, quando o dono da conta responder): na conta `contato@`, ativar Verificação em 2 etapas → criar **senha de app** (myaccount.google.com/apppasswords; se não aparecer, o admin do Workspace precisa permitir). Depois, em Supabase → Authentication → Emails → **SMTP Settings**, trocar remetente, usuário e senha. Nada mais muda.
 2. **Testar com gente de verdade:** fluxo de disponibilidade completo (pedir → link no grupo → marcar → confirmar → aparece na agenda), um membro criando evento, "Gerar novo link" em Conectar (corrigido na 0006), e se a navegação ficou rápida depois do `gru1`.
 3. Confirmar em **Membros** que André Daud, Gustavo Pacheco e Maria Clara Motta estão como **Diretoria** (foram deixados fora da importação em lote) e se Leonardo Moretti é membro ou diretoria.
 
-Template do e-mail (Magic Link e Confirm signup):
+Template do e-mail (já aplicado em "Magic link or OTP" e "Confirm sign up"):
 
 ```html
 <p>Olá!</p>
