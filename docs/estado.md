@@ -19,7 +19,7 @@ _Atualizado em 29/10/2026. Atualize este arquivo quando algo daqui mudar._
 
 ## Migrações aplicadas em produção
 
-Todas de `0001` a `0008` (rodadas à mão no SQL Editor, em ordem):
+Todas de `0001` a `0009` (rodadas à mão no SQL Editor, em ordem):
 
 | # | O quê |
 |---|---|
@@ -31,6 +31,7 @@ Todas de `0001` a `0008` (rodadas à mão no SQL Editor, em ordem):
 | 0006 | Link curto `/d/<codigo>` + resumo público; corrige `gen_random_bytes` (`extensions.`), inclusive `rotate_feed_token` |
 | 0007 | Membros criam eventos e mexem só nos seus (e nas suas séries) |
 | 0008 | Membros também abrem pedidos de disponibilidade e convidam qualquer pessoa |
+| 0009 | Pedido vencido e não confirmado sai do contador da aba 7 dias depois do prazo |
 
 ## Regras de acesso (resumo)
 
