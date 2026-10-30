@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Instrument_Sans, Space_Grotesk } from "next/font/google";
 import { cookies } from "next/headers";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import ProvedorDeMovimento from "@/components/ui/ProvedorDeMovimento";
 import { atributoTema, COOKIE_TEMA, lerTema } from "@/lib/tema";
 import "./globals.css";
@@ -51,6 +52,8 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
     <html lang="pt-BR" data-theme={atributoTema(tema)} className={`${spaceGrotesk.variable} ${instrumentSans.variable}`}>
       <body className="flex min-h-svh flex-col bg-ia-papel">
         <ProvedorDeMovimento>{children}</ProvedorDeMovimento>
+        {/* Tempos de carregamento reais (anônimos) no painel da Vercel. */}
+        <SpeedInsights />
       </body>
     </html>
   );
