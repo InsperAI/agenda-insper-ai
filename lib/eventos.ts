@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { supabaseNavegador, type ClienteSupabase } from "./supabase/client";
 import type { Categoria, EventoRow, Frequencia, MembroRow, NivelPublico } from "./supabase/tipos";
 import { criarCache } from "./cache";
@@ -28,6 +28,9 @@ export type DadosEvento = {
 /** Períodos já buscados (o atual, os vizinhos e os visitados há pouco). */
 const CACHE_EVENTOS = criarCache<EventoRow[]>(12);
 
+/** Eventos que a página já trouxe do servidor (datas em ISO, para atravessar a fronteira servidor → cliente). */
+export type EventosIniciais = { ini: string; fim: string; linhas: EventoRow[] };
+
 // O dono entra na chave: se outra pessoa entrar na mesma aba, não vê o cache de quem saiu.
 const faixaDe = (dono: string, { ini, fim }: Intervalo) => `${dono}|${ini.toISOString()}|${fim.toISOString()}`;
 
@@ -36,10 +39,21 @@ const faixaDe = (dono: string, { ini, fim }: Intervalo) => `${dono}|${ini.toISOS
  * cache e confirma com o banco por trás; depois de carregar, busca os períodos
  * vizinhos para a troca de mês/semana ser instantânea. Refaz a consulta quando
  * `recarregar()` é chamado e quando o Realtime avisa que a tabela mudou.
+ * `iniciais` (vindos do servidor) aparecem já no primeiro render, sem consulta.
  */
-export function useEventos(intervalo: Intervalo, vizinhos: Intervalo[], dono: string) {
+export function useEventos(intervalo: Intervalo, vizinhos: Intervalo[], dono: string, iniciais?: EventosIniciais) {
   const sb = useMemo(() => supabaseNavegador(), []);
-  const [resultado, setResultado] = useState<{ chave: string; linhas: EventoRow[] } | null>(null);
+  const [chaveInicial] = useState(() => {
+    if (!iniciais) return null;
+    const f = faixaDe(dono, { ini: new Date(iniciais.ini), fim: new Date(iniciais.fim) });
+    CACHE_EVENTOS.guardar(f, iniciais.linhas);
+    return `${f}|0`;
+  });
+  const [resultado, setResultado] = useState<{ chave: string; linhas: EventoRow[] } | null>(() =>
+    iniciais && chaveInicial ? { chave: chaveInicial, linhas: iniciais.linhas } : null,
+  );
+  // Os iniciais acabaram de sair do banco: a primeira consulta do cliente seria repetida.
+  const pularConsulta = useRef(chaveInicial);
   const [erro, setErro] = useState<string | null>(null);
   const [versao, setVersao] = useState(0);
 
@@ -54,6 +68,10 @@ export function useEventos(intervalo: Intervalo, vizinhos: Intervalo[], dono: st
   }, []);
 
   useEffect(() => {
+    if (pularConsulta.current === chave) {
+      pularConsulta.current = null;
+      return;
+    }
     let ativo = true;
     sb.rpc("events_in_range", { p_ini: iniIso, p_fim: fimIso }).then(({ data, error }) => {
       if (!ativo) return;

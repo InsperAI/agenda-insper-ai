@@ -19,6 +19,7 @@ import {
   useMembros,
   vaiDescartarFilhas,
   type DadosEvento,
+  type EventosIniciais,
 } from "@/lib/eventos";
 import { agoraSP, chaveDia, deChaveDia, inicioDaSemana, inicioDoMes } from "@/lib/fuso";
 import { expandir, type Ocorrencia } from "@/lib/recorrencia";
@@ -97,7 +98,17 @@ function mensagemErro(e: unknown): string {
  * `eu` decide o que aparece: diretoria e membros criam; a diretoria mexe em
  * tudo e o membro só no que criou (lib/niveis). A RLS (0007) garante o mesmo.
  */
-export default function Agenda({ vistaInicial, ancoraInicial, eu }: { vistaInicial: Vista; ancoraInicial: string; eu: { id: string; nivel: Nivel } }) {
+export default function Agenda({
+  vistaInicial,
+  ancoraInicial,
+  eu,
+  eventosIniciais,
+}: {
+  vistaInicial: Vista;
+  ancoraInicial: string;
+  eu: { id: string; nivel: Nivel };
+  eventosIniciais?: EventosIniciais;
+}) {
   const podeEditar = podeCriarEvento(eu.nivel);
   // Série: vale quem criou o mestre (o membro só cria ocorrências avulsas nas séries dele).
   const podeMexer = (o: Ocorrencia) => podeMexerNoEvento(eu, (o.mestre ?? o.evento).created_by);
@@ -161,7 +172,7 @@ export default function Agenda({ vistaInicial, ancoraInicial, eu }: { vistaInici
     [vista, dataAncora],
   );
 
-  const { linhas, carregando, erro, recarregar, sb } = useEventos(intervalo, vizinhos, eu.id);
+  const { linhas, carregando, erro, recarregar, sb } = useEventos(intervalo, vizinhos, eu.id, eventosIniciais);
   const membros = useMembros();
 
   const ocorrencias = useMemo(() => {
