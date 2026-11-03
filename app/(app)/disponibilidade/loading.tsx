@@ -2,8 +2,9 @@ import { Bloco, CabecalhoEsqueleto, Esqueleto, ListaEsqueleto } from "@/componen
 
 export default function CarregandoDisponibilidade() {
   return (
-    <Esqueleto rotulo="Carregando pedidos de disponibilidade…" className="wrap-estreito gap-8">
+    <Esqueleto rotulo="Carregando pedidos de disponibilidade…" className="wrap-estreito gap-6">
       <CabecalhoEsqueleto />
+      <Bloco className="h-10 w-56 rounded-full" />
       <div className="flex flex-col gap-2">
         <Bloco className="h-3 w-40" />
         <ListaEsqueleto linhas={3} />

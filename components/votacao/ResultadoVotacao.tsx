@@ -15,20 +15,23 @@ import DialogoConfirmar, { type Confirmacao } from "./DialogoConfirmar";
 
 type Pessoa = { id: string; name: string };
 
-/** Painel de quem abriu: quem respondeu, melhores horários, confirmar, reabrir, excluir. */
+/** Painel de quem acompanha: quem respondeu, melhores horários e, para quem decide, confirmar, reabrir, excluir. */
 export default function ResultadoVotacao({
   votacao,
   respostas,
   convidados,
   podeDecidir = true,
+  podeExcluir = true,
   pedidoPor = null,
   aoAvisar,
 }: {
   votacao: VotacaoRow;
   respostas: RespostaRow[];
   convidados: Pessoa[];
-  /** Confirmar, reabrir e excluir: só quem criou. O resto da diretoria só acompanha. */
+  /** Confirmar e reabrir: quem criou ou qualquer pessoa da diretoria (0010). */
   podeDecidir?: boolean;
+  /** Excluir: só quem criou. */
+  podeExcluir?: boolean;
   /** Nome de quem criou, quando quem vê é outra pessoa da diretoria. */
   pedidoPor?: string | null;
   aoAvisar: (msg: string) => void;
@@ -122,20 +125,21 @@ export default function ResultadoVotacao({
           </div>
         ))}
 
-      {podeDecidir ? (
+      {(podeExcluir || (podeDecidir && !confirmada)) && (
         <div className="flex flex-wrap justify-end gap-2">
-          <Botao variante="fantasma" tamanho="sm" onClick={() => setExcluindo(true)}>
-            Excluir pedido
-          </Botao>
-          {!confirmada && (
+          {podeExcluir && (
+            <Botao variante="fantasma" tamanho="sm" onClick={() => setExcluindo(true)}>
+              Excluir pedido
+            </Botao>
+          )}
+          {podeDecidir && !confirmada && (
             <Botao tamanho="sm" onClick={() => setReabrindo(true)}>
               Reabrir / estender prazo
             </Botao>
           )}
         </div>
-      ) : (
-        !confirmada && <p className="text-[0.8125rem] text-ia-meta">Só {pedidoPor ?? "quem fez o pedido"} pode confirmar o horário.</p>
       )}
+      {!podeDecidir && !confirmada && <p className="text-[0.8125rem] text-ia-meta">Só {pedidoPor ?? "quem fez o pedido"} ou a diretoria pode confirmar o horário.</p>}
 
       {escolhida && (
         <DialogoConfirmar faixa={escolhida} modo={votacao.modo} duracaoMin={votacao.duracao_min} salvando={ocupado} aoFechar={() => setEscolhida(null)} aoConfirmar={confirmar} />

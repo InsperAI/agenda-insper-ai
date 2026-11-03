@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import PaginaVotacao from "@/components/votacao/PaginaVotacao";
 import { obterMembroAtual } from "@/lib/membro";
-import { podeEditar } from "@/lib/niveis";
+import { podeDecidirPedido, podeEditar } from "@/lib/niveis";
 import { supabaseServidor } from "@/lib/supabase/server";
 import type { RespostaRow } from "@/lib/supabase/tipos";
 import { aceitaRespostas, statusVotacao } from "@/lib/votacao";
@@ -22,7 +22,7 @@ export default async function PaginaVotacaoRota({ params }: { params: Promise<{ 
   if (!votacao) return <NaoEncontrada />;
 
   const souCriador = votacao.criado_por === membro.id;
-  // A diretoria acompanha todos os pedidos (0005); só quem criou decide.
+  // A diretoria acompanha e decide todos os pedidos (0005, 0010); excluir é só de quem criou.
   const acompanha = souCriador || podeEditar(membro.nivel);
   const [{ data: mapa }, { data: respostas }, { data: convidados }] = await Promise.all([
     supabase.rpc("mapa_votacao", { p_id: id }),
@@ -38,7 +38,7 @@ export default async function PaginaVotacaoRota({ params }: { params: Promise<{ 
   const agora = new Date();
   const aceita = aceitaRespostas(votacao, agora.getTime());
 
-  let painel: { respostas: RespostaRow[]; convidados: { id: string; name: string }[]; podeDecidir: boolean; pedidoPor: string | null } | null = null;
+  let painel: { respostas: RespostaRow[]; convidados: { id: string; name: string }[]; podeDecidir: boolean; podeExcluir: boolean; pedidoPor: string | null } | null = null;
   if (acompanha) {
     const ids = [...(convidados ?? []).map((c) => c.member_id), ...(votacao.criado_por ? [votacao.criado_por] : [])];
     const { data: pessoas } = await supabase.from("members").select("id,name").in("id", ids).order("name");
@@ -47,7 +47,8 @@ export default async function PaginaVotacaoRota({ params }: { params: Promise<{ 
     painel = {
       respostas: respostas ?? [],
       convidados: lista.filter((p) => convidadosIds.has(p.id)),
-      podeDecidir: souCriador,
+      podeDecidir: podeDecidirPedido(membro, votacao.criado_por),
+      podeExcluir: souCriador,
       pedidoPor: souCriador ? null : (lista.find((p) => p.id === votacao.criado_por)?.name ?? "alguém da diretoria"),
     };
   }

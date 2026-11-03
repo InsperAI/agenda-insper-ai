@@ -147,6 +147,9 @@ const ERROS_DO_BANCO: Record<string, string> = {
   "Trainees não abrem pedidos de disponibilidade.": "Trainees não abrem pedidos de disponibilidade.",
   "Só quem abriu a votação (e ainda pode criar eventos) pode confirmar.": "Só quem fez o pedido pode confirmar.",
   "Só quem abriu a votação (e ainda pode criar eventos) pode reabrir.": "Só quem fez o pedido pode reabrir.",
+  // 0010: a diretoria também decide.
+  "Só quem abriu o pedido ou a diretoria pode confirmar.": "Só quem fez o pedido ou a diretoria pode confirmar.",
+  "Só quem abriu o pedido ou a diretoria pode reabrir.": "Só quem fez o pedido ou a diretoria pode reabrir.",
 };
 
 export function traduzirErroVotacao(mensagem: string): string {

@@ -43,7 +43,7 @@ export default function PaginaVotacao({
   minhaResposta: string[] | null;
   mapaInicial: MapaVotacao;
   /** Para quem criou e para a diretoria: respostas com nomes. Só quem criou decide. */
-  painel: { respostas: RespostaRow[]; convidados: { id: string; name: string }[]; podeDecidir: boolean; pedidoPor: string | null } | null;
+  painel: { respostas: RespostaRow[]; convidados: { id: string; name: string }[]; podeDecidir: boolean; podeExcluir: boolean; pedidoPor: string | null } | null;
 }) {
   const editavel = aceita && podeResponder;
   const sb = useMemo(() => supabaseNavegador(), []);
@@ -130,6 +130,7 @@ export default function PaginaVotacao({
           respostas={painel.respostas}
           convidados={painel.convidados}
           podeDecidir={painel.podeDecidir}
+          podeExcluir={painel.podeExcluir}
           pedidoPor={painel.pedidoPor}
           aoAvisar={setAviso}
         />

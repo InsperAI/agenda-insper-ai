@@ -1,25 +1,27 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import AbasPedidos, { type Aba } from "@/components/votacao/AbasPedidos";
+import ListaPedidos, { VazioPedidos } from "@/components/votacao/ListaPedidos";
 import { BotaoLink } from "@/components/ui/Botao";
-import { IcoChecar, IcoMais } from "@/components/ui/Icones";
-import { dataHoraCurta } from "@/lib/datas";
 import { obterMembroAtual } from "@/lib/membro";
+import { IcoMais } from "@/components/ui/Icones";
 import { podeCriarEvento, podeEditar } from "@/lib/niveis";
+import { separarPedidos } from "@/lib/pedidos";
 import { supabaseServidor } from "@/lib/supabase/server";
 import type { VotacaoRow } from "@/lib/supabase/tipos";
-import { aceitaRespostas, rotuloDuracao } from "@/lib/votacao";
 
 export const metadata: Metadata = { title: "Disponibilidade" };
 
 /**
- * Pedidos de disponibilidade. A RLS já filtra: cada um vê aqueles em que foi
- * convidado ou que criou; a diretoria vê todos (0005) e ganha a seção
- * "Aguardando disponibilidade" com o andamento de cada pedido em aberto.
+ * Pedidos de disponibilidade em duas abas. A RLS já filtra: cada um vê aqueles
+ * em que foi convidado ou que criou; a diretoria vê todos (0005) e decide
+ * qualquer um (0010). Abertos se dividem pelo que cada um precisa fazer.
  */
-export default async function PaginaVotacoes() {
+export default async function PaginaVotacoes({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
+  const aba: Aba = (await searchParams).aba === "encerrados" ? "encerrados" : "abertos";
   const { membro } = await obterMembroAtual();
   if (!membro) return null;
   const diretoria = podeEditar(membro.nivel);
+  const podeCriar = podeCriarEvento(membro.nivel);
 
   const supabase = await supabaseServidor();
   const [{ data: votacoes }, { data: convites }, { data: respostas }] = await Promise.all([
@@ -31,94 +33,51 @@ export default async function PaginaVotacoes() {
 
   const meus = (linhas: { votacao_id: string; member_id: string }[] | null) =>
     new Set((linhas ?? []).filter((l) => l.member_id === membro.id).map((l) => l.votacao_id));
-  const convidado = meus(convites);
   const respondidas = meus(respostas);
   const agora = new Date().getTime();
   const lista = votacoes ?? [];
-  const abertas = lista.filter((v) => aceitaRespostas(v, agora));
-  const pendentes = abertas.filter((v) => convidado.has(v.id) && !respondidas.has(v.id));
-  const aguardando = diretoria ? abertas.filter((v) => !pendentes.includes(v)) : [];
-  const demais = lista.filter((v) => !pendentes.includes(v) && !aguardando.includes(v));
+  const g = separarPedidos(lista, { eu: membro, convidado: meus(convites), respondidas, agora });
   const andamento = diretoria ? await descreverAndamento(lista, convites ?? [], respostas ?? [], membro.id) : new Map<string, string>();
+  const comum = { respondidas, andamento, meuId: membro.id, agora };
 
   return (
-    <div className="wrap-estreito flex flex-col gap-8">
+    <div className="wrap-estreito flex flex-col gap-6">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h1 className="t-h2">Disponibilidade</h1>
-          <p className="t-apoio mt-2">Marque os horários em que você pode. Quem fez o pedido escolhe o melhor e ele entra direto na agenda.</p>
+          <p className="t-apoio mt-2">Marque os horários em que você pode. Quem fez o pedido ou a diretoria escolhe o melhor, e ele entra direto na agenda.</p>
         </div>
-        {podeCriarEvento(membro.nivel) && (
+        {podeCriar && (
           <BotaoLink href="/disponibilidade/nova" variante="primario">
             <IcoMais /> Pedir disponibilidade
           </BotaoLink>
         )}
       </div>
 
-      {lista.length === 0 && <p className="t-apoio">Nenhum pedido de disponibilidade por aqui ainda.</p>}
-
-      {pendentes.length > 0 && (
-        <Lista titulo={`Esperando sua resposta · ${pendentes.length}`} votacoes={pendentes} respondidas={respondidas} andamento={andamento} meuId={membro.id} agora={agora} />
-      )}
-      {aguardando.length > 0 && (
-        <Lista titulo={`Aguardando disponibilidade · ${aguardando.length}`} votacoes={aguardando} respondidas={respondidas} andamento={andamento} meuId={membro.id} agora={agora} />
-      )}
-      {demais.length > 0 && (
-        <Lista titulo={diretoria ? "Encerrados" : "Outras"} votacoes={demais} respondidas={respondidas} andamento={andamento} meuId={membro.id} agora={agora} />
+      {lista.length === 0 ? (
+        <p className="t-apoio">Nenhum pedido de disponibilidade por aqui ainda.</p>
+      ) : (
+        <>
+          <AbasPedidos ativa={aba} abertos={g.totalAbertos} encerrados={g.encerrados.length} />
+          {aba === "abertos" ? (
+            g.totalAbertos === 0 ? (
+              <VazioPedidos texto="Nenhum pedido aberto agora." dica={podeCriar ? "Para marcar uma reunião, use “Pedir disponibilidade”." : undefined} />
+            ) : (
+              <div className="flex flex-col gap-8">
+                {g.responder.length > 0 && <ListaPedidos titulo={`Esperando sua resposta · ${g.responder.length}`} votacoes={g.responder} {...comum} />}
+                {g.decidir.length > 0 && <ListaPedidos titulo={`Falta confirmar o horário · ${g.decidir.length}`} votacoes={g.decidir} {...comum} />}
+                {g.andamento.length > 0 && <ListaPedidos titulo={`Em andamento · ${g.andamento.length}`} votacoes={g.andamento} {...comum} />}
+              </div>
+            )
+          ) : g.encerrados.length === 0 ? (
+            <VazioPedidos texto="Nenhum pedido encerrado ainda." dica="Aqui ficam os pedidos com horário confirmado e os que venceram sem confirmação." />
+          ) : (
+            <ListaPedidos titulo="Confirmados e vencidos" votacoes={g.encerrados} {...comum} />
+          )}
+        </>
       )}
     </div>
   );
-}
-
-function Lista({
-  titulo,
-  votacoes,
-  respondidas,
-  andamento,
-  meuId,
-  agora,
-}: {
-  titulo: string;
-  votacoes: VotacaoRow[];
-  respondidas: Set<string>;
-  andamento: Map<string, string>;
-  meuId: string;
-  agora: number;
-}) {
-  return (
-    <section className="flex flex-col gap-2">
-      <h2 className="t-meta">{titulo}</h2>
-      <ul className="divide-y divide-ia-regua overflow-hidden rounded-xl border border-ia-regua">
-        {votacoes.map((v) => (
-          <li key={v.id}>
-            <Link href={`/disponibilidade/${v.id}`} className="flex items-center gap-3 px-4 py-3 transition-colors hover:bg-ia-nevoa">
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-[0.95rem] text-ia-petroleo">
-                  {v.titulo}
-                  {v.criado_por === meuId && <span className="ml-2 rounded-full bg-ia-nevoa px-2 py-0.5 text-[0.7rem] text-ia-apoio">você pediu</span>}
-                </p>
-                <p className="truncate text-[0.8125rem] text-ia-apoio">
-                  {rotuloDuracao(v.duracao_min)} · {v.modo === "recorrente" ? "recorrente" : "data única"} · {situacao(v, agora)}
-                  {andamento.has(v.id) && ` · ${andamento.get(v.id)}`}
-                </p>
-              </div>
-              {respondidas.has(v.id) && (
-                <span className="inline-flex items-center gap-1 text-[0.8125rem] text-ia-apoio">
-                  <IcoChecar width={14} height={14} /> respondida
-                </span>
-              )}
-            </Link>
-          </li>
-        ))}
-      </ul>
-    </section>
-  );
-}
-
-function situacao(v: VotacaoRow, agora: number): string {
-  if (v.confirmada_em) return "confirmada";
-  if (Date.parse(v.prazo) <= agora) return "prazo encerrado";
-  return `até ${dataHoraCurta(new Date(v.prazo))}`;
 }
 
 /** "pedido por Ana · 3 de 7 responderam", para a diretoria acompanhar. */

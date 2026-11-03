@@ -19,7 +19,7 @@ _Atualizado em 29/10/2026. Atualize este arquivo quando algo daqui mudar._
 
 ## Migrações aplicadas em produção
 
-Todas de `0001` a `0009` (rodadas à mão no SQL Editor, em ordem):
+Todas de `0001` a `0010` (rodadas à mão no SQL Editor, em ordem):
 
 | # | O quê |
 |---|---|
@@ -32,12 +32,13 @@ Todas de `0001` a `0009` (rodadas à mão no SQL Editor, em ordem):
 | 0007 | Membros criam eventos e mexem só nos seus (e nas suas séries) |
 | 0008 | Membros também abrem pedidos de disponibilidade e convidam qualquer pessoa |
 | 0009 | Pedido vencido e não confirmado sai do contador da aba 7 dias depois do prazo |
+| 0010 | Diretoria também confirma/reabre qualquer pedido; evento fica no nome de quem pediu |
 
 ## Regras de acesso (resumo)
 
 - **Ver:** cada nível vê os eventos cujo `publico` o inclui (+ convidados individuais); a diretoria vê tudo.
 - **Eventos:** diretoria cria/edita/exclui tudo; membro cria (sempre visível para membros) e mexe só no que criou; trainee só vê.
-- **Disponibilidade:** diretoria e membros abrem; só convidados respondem; convidados veem o mapa sem nomes; diretoria e quem abriu veem nomes; só quem abriu confirma/reabre/exclui.
+- **Disponibilidade:** diretoria e membros abrem; só convidados respondem; convidados veem o mapa sem nomes; diretoria e quem abriu veem nomes; quem abriu **ou qualquer pessoa da diretoria** confirma/reabre (0010 — o evento fica no nome de quem pediu); só quem abriu exclui. A página tem abas **Abertos / Encerrados** (`?aba=encerrados`); encerrado = confirmado ou vencido há mais de 7 dias (`lib/pedidos.ts`, mesma regra da 0009).
 - **Membros:** só admins (que são da diretoria) cadastram, editam, aprovam pedidos de acesso.
 
 ## Pendências

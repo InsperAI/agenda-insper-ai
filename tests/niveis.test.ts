@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { alternarPublico, ehNivel, frasePublico, podeCriarEvento, podeEditar, podeMexerNoEvento, podeVer, visiveisPara } from "@/lib/niveis";
+import { alternarPublico, ehNivel, frasePublico, podeCriarEvento, podeDecidirPedido, podeEditar, podeMexerNoEvento, podeVer, visiveisPara } from "@/lib/niveis";
 import type { Nivel, NivelPublico } from "@/lib/supabase/tipos";
 
 describe("podeVer", () => {
@@ -97,5 +97,21 @@ describe("eventos: quem cria e quem mexe (0007)", () => {
     expect(podeMexerNoEvento({ nivel: "membro", id: "m" }, "d")).toBe(false);
     expect(podeMexerNoEvento({ nivel: "membro", id: "m" }, null)).toBe(false);
     expect(podeMexerNoEvento({ nivel: "trainee", id: "t" }, "t")).toBe(false);
+  });
+});
+
+describe("podeDecidirPedido", () => {
+  it("a diretoria decide qualquer pedido, inclusive de membros", () => {
+    expect(podeDecidirPedido({ id: "d1", nivel: "diretoria" }, "m1")).toBe(true);
+    expect(podeDecidirPedido({ id: "d1", nivel: "diretoria" }, null)).toBe(true);
+  });
+
+  it("membro decide só o próprio pedido", () => {
+    expect(podeDecidirPedido({ id: "m1", nivel: "membro" }, "m1")).toBe(true);
+    expect(podeDecidirPedido({ id: "m1", nivel: "membro" }, "m2")).toBe(false);
+  });
+
+  it("trainee nunca decide", () => {
+    expect(podeDecidirPedido({ id: "t1", nivel: "trainee" }, "t1")).toBe(false);
   });
 });

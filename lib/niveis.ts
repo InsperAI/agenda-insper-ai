@@ -48,6 +48,14 @@ export function podeMexerNoEvento(membro: { nivel: Nivel; id: string }, criadoPo
 }
 
 /**
+ * Confirmar ou reabrir um pedido de disponibilidade: a diretoria decide
+ * qualquer um; um membro, só o que ele abriu (pode_decidir_votacao, 0010).
+ */
+export function podeDecidirPedido(membro: { nivel: Nivel; id: string }, criadoPor: string | null): boolean {
+  return podeMexerNoEvento(membro, criadoPor);
+}
+
+/**
  * Para quem não passa pela RLS (feed .ics com service role): o que o membro vê
  * pelo nível ou por ter sido convidado individualmente (0004_votacoes.sql).
  */
