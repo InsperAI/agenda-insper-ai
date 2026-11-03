@@ -6,6 +6,7 @@ import type { Categoria, EventoRow, Frequencia, MembroRow, NivelPublico } from "
 import { criarCache } from "./cache";
 import type { Intervalo } from "./periodo";
 import type { Ocorrencia } from "./recorrencia";
+import { ehFalhaDeRede, SEM_CONEXAO } from "./erros";
 
 /** O que o formulário entrega. Datas em ISO (instantes). */
 export type DadosEvento = {
@@ -76,7 +77,7 @@ export function useEventos(intervalo: Intervalo, vizinhos: Intervalo[], dono: st
     sb.rpc("events_in_range", { p_ini: iniIso, p_fim: fimIso }).then(({ data, error }) => {
       if (!ativo) return;
       if (error) {
-        setErro(error.message);
+        setErro(traduzirErro(error.message));
         setResultado((prev) => ({ chave, linhas: prev?.linhas ?? [] }));
         return;
       }
@@ -144,6 +145,7 @@ function lancar(error: { message: string } | null) {
 }
 
 function traduzirErro(m: string): string {
+  if (ehFalhaDeRede(m)) return SEM_CONEXAO;
   if (/row-level security/i.test(m)) return "Você não tem permissão para fazer isso.";
   if (/ends_after_start/i.test(m)) return "O fim precisa ser depois do início.";
   if (/link/i.test(m) && /check/i.test(m)) return "O link precisa começar com http:// ou https://.";

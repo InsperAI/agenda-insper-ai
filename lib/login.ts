@@ -2,6 +2,8 @@
  * Login por código no e-mail (Supabase Auth OTP). Funções puras: validação,
  * normalização e tradução das mensagens do Supabase, que vêm em inglês.
  */
+import { ehFalhaDeRede, SEM_CONEXAO } from "./erros";
+
 export const EMAIL_LOGIN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 /** O Supabase manda 6 dígitos por padrão; aceita até 10 caso o projeto mude o tamanho. */
@@ -17,6 +19,7 @@ export function limparCodigo(codigo: string): string {
 }
 
 export function traduzirErroLogin(mensagem: string): string {
+  if (ehFalhaDeRede(mensagem)) return SEM_CONEXAO;
   if (/expired|invalid/i.test(mensagem) && /token|otp|code/i.test(mensagem)) return "Código inválido ou expirado. Confira ou peça outro.";
   if (/only request this after|security purposes/i.test(mensagem)) return "Espere alguns segundos antes de pedir outro código.";
   if (/rate limit/i.test(mensagem)) return "Muitos códigos enviados agora. Tente de novo em alguns minutos.";

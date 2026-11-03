@@ -55,6 +55,12 @@ Template do e-mail (já aplicado em "Magic link or OTP" e "Confirm sign up"):
 <p>O código vale por 1 hora. Se você não pediu, pode ignorar este e-mail.</p>
 ```
 
+## Estados de tela
+
+- `app/not-found.tsx` (404), `app/error.tsx` (fora do app), `app/(app)/error.tsx` (dentro do app, mantém a barra) e `app/global-error.tsx` (layout raiz falhou). Corpo comum em `components/estados/` (`TelaEstado`, `TelaErro` — detecta offline e mostra o código do erro para casar com o log da Vercel).
+- Esqueletos por aba: `loading.tsx` em `(app)`, `agenda`, `disponibilidade`, `disponibilidade/[id]`, `disponibilidade/nova` (peças em `components/estados/Esqueleto.tsx`; pulso desligado com "reduzir movimento").
+- Falha de rede vira "Sem conexão…" em todos os tradutores de erro (`lib/erros.ts`). A agenda tem "Tentar de novo" no aviso de erro e explica quando a busca/filtros escondem tudo (`AvisoFiltro`).
+
 ## Desempenho
 
 - Sessão conferida com `auth.getClaims()` (JWT ES256 verificado localmente) em `proxy.ts`, `lib/membro.ts` e `/d/[codigo]` — sem ida ao servidor de Auth por navegação. Se as chaves de assinatura do Supabase voltarem a ser simétricas, isso volta a custar uma ida.

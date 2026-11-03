@@ -1,5 +1,6 @@
 import { ehNivel } from "./niveis";
 import type { MembroRow, Nivel } from "./supabase/tipos";
+import { ehFalhaDeRede, SEM_CONEXAO } from "./erros";
 
 /** Pura e testável: usada pela tela Membros (components/admin/*). */
 
@@ -94,6 +95,7 @@ export function lerListaMembros(texto: string): { validos: NovoMembro[]; invalid
 
 /** Mensagens do Postgres/PostgREST → português para o aviso. */
 export function traduzirErroMembro(m: string): string {
+  if (ehFalhaDeRede(m)) return SEM_CONEXAO;
   if (/duplicate key/i.test(m)) return "Esse e-mail já está cadastrado.";
   if (/admin_e_diretoria/i.test(m)) return "Só quem é da diretoria pode ser admin.";
   if (/row-level security/i.test(m)) return "Só admins podem alterar a lista de membros.";

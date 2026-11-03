@@ -2,6 +2,7 @@ import { addDays, addMinutes } from "date-fns";
 import { dataCurta, DIAS_SEMANA_GRADE } from "./datas";
 import { chaveDia, deChaveDia, sp } from "./fuso";
 import type { ModoVotacao, VotacaoRow } from "./supabase/tipos";
+import { ehFalhaDeRede, SEM_CONEXAO } from "./erros";
 
 /**
  * Pedidos de disponibilidade — no código e no banco, "votação" (supabase/migrations/0004_votacoes.sql). Puro e testável.
@@ -149,5 +150,6 @@ const ERROS_DO_BANCO: Record<string, string> = {
 };
 
 export function traduzirErroVotacao(mensagem: string): string {
+  if (ehFalhaDeRede(mensagem)) return SEM_CONEXAO;
   return ERROS_DO_BANCO[mensagem] ?? mensagem;
 }

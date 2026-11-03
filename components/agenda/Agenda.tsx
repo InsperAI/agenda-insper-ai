@@ -27,6 +27,7 @@ import { podeCriarEvento, podeMexerNoEvento } from "@/lib/niveis";
 import type { Categoria, EventoRow, Nivel } from "@/lib/supabase/tipos";
 import { ancoraVizinha, intervaloDaVista } from "@/lib/periodo";
 import { montarUrl, type Vista } from "@/lib/url";
+import AvisoFiltro from "./AvisoFiltro";
 import BotaoFlutuante from "./BotaoFlutuante";
 import CabecalhoAgenda from "./CabecalhoAgenda";
 import DialogoSerie, { type Escopo, type PerguntaSerie } from "./DialogoSerie";
@@ -152,6 +153,16 @@ export default function Agenda({
       }
       return n;
     });
+  }, []);
+
+  const mostrarTodas = useCallback(() => {
+    const todas = new Set(TODAS_CATEGORIAS);
+    setFiltros(todas);
+    try {
+      localStorage.setItem(CHAVE_FILTROS, JSON.stringify([...todas]));
+    } catch {
+      /* ignora */
+    }
   }, []);
 
   /* ── URL espelha vista + âncora, sem ida ao servidor ───────────────────── */
@@ -347,10 +358,14 @@ export default function Agenda({
       </div>
 
       {erro && (
-        <p role="alert" className="rounded-lg bg-perigo-fundo px-3 py-2 text-[0.875rem] text-perigo">
-          Não foi possível carregar os eventos: {erro}
-        </p>
+        <div role="alert" className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 rounded-lg bg-perigo-fundo py-2 pr-2 pl-3 text-[0.875rem] text-perigo">
+          <span>Não deu para carregar os eventos. {erro}</span>
+          <Botao tamanho="sm" variante="fantasma" onClick={recarregar}>
+            Tentar de novo
+          </Botao>
+        </div>
       )}
+      {!carregando && !erro && <AvisoFiltro filtros={filtros} busca={busca} vazio={ocorrencias.length === 0} aoMostrarTodas={mostrarTodas} />}
 
       <AnimatePresence mode="wait" initial={false} custom={direcao}>
         <motion.div
