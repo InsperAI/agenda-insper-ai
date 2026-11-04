@@ -103,3 +103,11 @@ describe("ics", () => {
     expect(ics).toContain(`UID:${semanal.id}_${occ.inicio.getTime()}@`);
   });
 });
+
+describe("cabeçalho do calendário", () => {
+  it("pede atualização de hora em hora a quem respeita (Outlook, Thunderbird…)", () => {
+    const ics = serializarCalendario([], "Teste", new Date("2026-11-04T12:00:00Z"));
+    expect(ics).toContain("\r\nREFRESH-INTERVAL;VALUE=DURATION:PT1H\r\n");
+    expect(ics).toContain("\r\nX-PUBLISHED-TTL:PT1H\r\n");
+  });
+});

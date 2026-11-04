@@ -17,6 +17,7 @@ import { agoraSP, chaveDia, gradeDoMes, inicioDaSemana, inicioDoDia, inicioDoMes
 import { expandir, type Ocorrencia } from "@/lib/recorrencia";
 import type { EventoRow, MembroRow } from "@/lib/supabase/tipos";
 import GaleriaVotacao from "./GaleriaVotacao";
+import Assinatura from "@/components/agenda/Assinatura";
 
 const MEMBROS: MembroRow[] = [
   { id: "m1", email: "gui@insper.ai", name: "Guilherme Leal", cargo: "Presidente", nivel: "diretoria", is_admin: true, created_at: "2026-08-01T12:00:00Z" },
@@ -199,6 +200,10 @@ export default function Galeria() {
         </section>
 
         <GaleriaVotacao />
+        <section id="conectar" className="wrap-estreito flex flex-col gap-4 px-0">
+          <h2 className="t-h3">Conectar</h2>
+          <Assinatura token={"0".repeat(48)} />
+        </section>
 
         <section className="flex gap-2">
           <Botao onClick={() => setSelecionada(ocorrencias[0] ?? null)}>Abrir painel</Botao>

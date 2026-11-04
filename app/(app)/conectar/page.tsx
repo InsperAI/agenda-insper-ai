@@ -13,8 +13,8 @@ export default async function PaginaConectar() {
       <div>
         <h1 className="t-h2">Conectar ao seu calendário</h1>
         <p className="t-apoio mt-2">
-          Adicione a agenda da Insper AI ao Google Agenda, Apple Calendar ou Outlook. Ela aparece junto dos seus compromissos e se atualiza sozinha
-          (o Google demora de 12 a 24 h para puxar mudanças; a Apple, alguns minutos).
+          Adicione a agenda da Insper AI ao calendário que você já usa. Ela aparece junto dos seus compromissos e se atualiza sozinha; a velocidade
+          depende do app (veja abaixo).
         </p>
       </div>
       <Assinatura token={data?.token ?? null} />

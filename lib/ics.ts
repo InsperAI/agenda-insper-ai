@@ -120,6 +120,10 @@ function envolver(nome: string, corpo: string[]): string {
     "METHOD:PUBLISH",
     `X-WR-CALNAME:${escapar(nome)}`,
     `X-WR-TIMEZONE:${FUSO}`,
+    // Dica de frequência (RFC 7986 e a extensão da Microsoft). Outlook e outros
+    // respeitam; Google (12–24 h) e Apple (ajuste de quem assina) ignoram.
+    "REFRESH-INTERVAL;VALUE=DURATION:PT1H",
+    "X-PUBLISHED-TTL:PT1H",
     ...VTIMEZONE,
     ...corpo,
     "END:VCALENDAR",
