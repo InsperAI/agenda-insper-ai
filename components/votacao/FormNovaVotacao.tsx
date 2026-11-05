@@ -5,16 +5,14 @@ import { useRouter } from "next/navigation";
 import { useMemo, useState, type FormEvent } from "react";
 import Botao from "@/components/ui/Botao";
 import Campo from "@/components/ui/Campo";
-import { IcoChecar } from "@/components/ui/Icones";
 import Segmentado from "@/components/ui/Segmentado";
+import { Chips, SeletorConvidados, useConvidados, type Pessoa } from "./Convidados";
 import { dataCurta } from "@/lib/datas";
 import { agoraSP, chaveDia, deChaveDia, deInputDataHora, inicioDaSemana, paraInputDataHora } from "@/lib/fuso";
-import { NIVEIS } from "@/lib/niveis";
 import { supabaseNavegador } from "@/lib/supabase/client";
-import type { ModoVotacao, Nivel } from "@/lib/supabase/tipos";
+import type { ModoVotacao } from "@/lib/supabase/tipos";
 import { DIAS_DA_SEMANA, diasDaSemana, rotuloDuracao, traduzirErroVotacao } from "@/lib/votacao";
 
-type Pessoa = { id: string; name: string; nivel: Nivel };
 
 const MODOS: { valor: ModoVotacao; rotulo: string }[] = [
   { valor: "unica", rotulo: "Data única" },
@@ -36,30 +34,13 @@ export default function FormNovaVotacao({ pessoas, meuId }: { pessoas: Pessoa[];
   const [dias, setDias] = useState<string[]>(DIAS_UTEIS);
   const [duracao, setDuracao] = useState(60);
   const [prazo, setPrazo] = useState(() => paraInputDataHora(addDays(hoje, PRAZO_PADRAO_DIAS)));
-  const [niveis, setNiveis] = useState<Nivel[]>(["diretoria"]);
-  const [incluir, setIncluir] = useState<ReadonlySet<string>>(new Set());
-  const [excluir, setExcluir] = useState<ReadonlySet<string>>(new Set());
+  const c = useConvidados(pessoas, meuId);
   const [erro, setErro] = useState<string | null>(null);
   const [ocupado, setOcupado] = useState(false);
 
   const segunda = chaveDia(inicioDaSemana(deChaveDia(semana)));
-  const convidado = (p: Pessoa) => p.id === meuId || incluir.has(p.id) || (niveis.includes(p.nivel) && !excluir.has(p.id));
-  const totalConvidados = pessoas.filter(convidado).length;
-
   function alternar<T>(lista: readonly T[], item: T): T[] {
     return lista.includes(item) ? lista.filter((x) => x !== item) : [...lista, item];
-  }
-
-  function alternarPessoa(p: Pessoa) {
-    const doNivel = niveis.includes(p.nivel);
-    const trocar = (s: ReadonlySet<string>) => {
-      const novo = new Set(s);
-      if (novo.has(p.id)) novo.delete(p.id);
-      else novo.add(p.id);
-      return novo;
-    };
-    if (doNivel) setExcluir(trocar);
-    else setIncluir(trocar);
   }
 
   async function enviar(e: FormEvent) {
@@ -68,7 +49,7 @@ export default function FormNovaVotacao({ pessoas, meuId }: { pessoas: Pessoa[];
     if (dias.length === 0) return setErro("Escolha pelo menos um dia.");
     const prazoData = deInputDataHora(prazo);
     if (Number.isNaN(prazoData.getTime()) || prazoData.getTime() <= new Date().getTime()) return setErro("O prazo precisa ser no futuro.");
-    if (totalConvidados < 2) return setErro("Convide pelo menos mais uma pessoa.");
+    if (c.total < 2) return setErro("Convide pelo menos mais uma pessoa.");
 
     setErro(null);
     setOcupado(true);
@@ -79,9 +60,9 @@ export default function FormNovaVotacao({ pessoas, meuId }: { pessoas: Pessoa[];
       p_dias: modo === "unica" ? diasDaSemana(segunda, dias) : [...dias].sort(),
       p_duracao_min: duracao,
       p_prazo: prazoData.toISOString(),
-      p_niveis: niveis,
-      p_incluir: [...incluir],
-      p_excluir: [...excluir],
+      p_niveis: c.niveis,
+      p_incluir: [...c.incluir],
+      p_excluir: [...c.excluir],
     });
     setOcupado(false);
     if (error || !data) return setErro(error ? traduzirErroVotacao(error.message) : "Não foi possível criar o pedido.");
@@ -134,52 +115,7 @@ export default function FormNovaVotacao({ pessoas, meuId }: { pessoas: Pessoa[];
         </Campo>
       </div>
 
-      <Chips
-        rotulo="Convidar"
-        opcoes={NIVEIS.map((n) => ({ id: n.id, rotulo: n.plural }))}
-        ligados={niveis}
-        aoAlternar={(id) => setNiveis((ns) => alternar(ns, id as Nivel))}
-        dica="Todos desses níveis. Ajuste pessoas abaixo."
-      />
-
-      <details className="rounded-xl border border-ia-regua">
-        <summary className="cursor-pointer list-none p-4 text-[0.9rem] text-ia-petroleo [&::-webkit-details-marker]:hidden">
-          Ajustar pessoas · {totalConvidados} convidado{totalConvidados === 1 ? "" : "s"}
-        </summary>
-        <div className="flex flex-col gap-4 px-4 pb-4">
-          {NIVEIS.map((n) => {
-            const grupo = pessoas.filter((p) => p.nivel === n.id);
-            if (grupo.length === 0) return null;
-            return (
-              <div key={n.id} className="flex flex-col gap-1.5">
-                <p className="t-meta">{n.plural}</p>
-                <div className="flex flex-wrap gap-1.5">
-                  {grupo.map((p) => {
-                    const on = convidado(p);
-                    return (
-                      <button
-                        key={p.id}
-                        type="button"
-                        role="checkbox"
-                        aria-checked={on}
-                        disabled={p.id === meuId}
-                        onClick={() => alternarPessoa(p)}
-                        className={`inline-flex h-8 items-center gap-1.5 rounded-full border px-3 text-[0.8125rem] transition-colors disabled:opacity-70 ${
-                          on ? "border-ia-petroleo bg-ia-petroleo text-ia-papel" : "border-ia-regua text-ia-corpo hover:bg-ia-nevoa"
-                        }`}
-                      >
-                        {on && <IcoChecar width={13} height={13} />}
-                        {p.name}
-                        {p.id === meuId && " (você)"}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </details>
+      <SeletorConvidados c={c} pessoas={pessoas} meuId={meuId} />
 
       {erro && (
         <p role="alert" className="rounded-lg bg-perigo-fundo px-3 py-2 text-[0.875rem] text-perigo">
@@ -192,34 +128,5 @@ export default function FormNovaVotacao({ pessoas, meuId }: { pessoas: Pessoa[];
         </Botao>
       </div>
     </form>
-  );
-}
-
-function Chips({ rotulo, opcoes, ligados, aoAlternar, dica }: { rotulo: string; opcoes: { id: string; rotulo: string }[]; ligados: readonly string[]; aoAlternar: (id: string) => void; dica?: string }) {
-  return (
-    <div className="flex flex-col gap-1.5">
-      <span className="text-[0.8125rem] text-ia-apoio">{rotulo}</span>
-      <div role="group" aria-label={rotulo} className="flex flex-wrap gap-1.5">
-        {opcoes.map((o) => {
-          const on = ligados.includes(o.id);
-          return (
-            <button
-              key={o.id}
-              type="button"
-              role="checkbox"
-              aria-checked={on}
-              onClick={() => aoAlternar(o.id)}
-              className={`inline-flex h-9 items-center gap-1.5 rounded-full border px-3.5 text-[0.875rem] transition-colors ${
-                on ? "border-ia-petroleo bg-ia-petroleo text-ia-papel" : "border-ia-regua text-ia-corpo hover:bg-ia-nevoa"
-              }`}
-            >
-              {on && <IcoChecar width={14} height={14} />}
-              {o.rotulo}
-            </button>
-          );
-        })}
-      </div>
-      {dica && <p className="text-[0.8125rem] text-ia-meta">{dica}</p>}
-    </div>
   );
 }

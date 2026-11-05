@@ -19,7 +19,7 @@ _Atualizado em 29/10/2026. Atualize este arquivo quando algo daqui mudar._
 
 ## Migrações aplicadas em produção
 
-Todas de `0001` a `0011` (rodadas à mão no SQL Editor, em ordem):
+Todas de `0001` a `0012` (rodadas à mão no SQL Editor, em ordem):
 
 | # | O quê |
 |---|---|
@@ -34,12 +34,14 @@ Todas de `0001` a `0011` (rodadas à mão no SQL Editor, em ordem):
 | 0009 | Pedido vencido e não confirmado sai do contador da aba 7 dias depois do prazo |
 | 0010 | Diretoria também confirma/reabre qualquer pedido; evento fica no nome de quem pediu |
 | 0011 | Quem entra num nível (cadastro ou mudança) vira convidado dos pedidos abertos para esse nível |
+| 0012 | **Horários por grupo** (agendamentos): grupos estilo Classroom, um horário por grupo; corrige `pode_decidir_votacao` para pedido sem dono |
 
 ## Regras de acesso (resumo)
 
 - **Ver:** cada nível vê os eventos cujo `publico` o inclui (+ convidados individuais); a diretoria vê tudo.
 - **Eventos:** diretoria cria/edita/exclui tudo; membro cria (sempre visível para membros) e mexe só no que criou; trainee só vê.
 - **Disponibilidade:** diretoria e membros abrem; só convidados respondem; convidados veem o mapa sem nomes; diretoria e quem abriu veem nomes; quem abriu **ou qualquer pessoa da diretoria** confirma/reabre (0010 — o evento fica no nome de quem pediu); só quem abriu exclui. A página tem abas **Abertos / Encerrados** (`?aba=encerrados`); encerrado = confirmado ou vencido há mais de 7 dias (`lib/pedidos.ts`, mesma regra da 0009).
+- **Horários por grupo** (`/disponibilidade/g/<id>`, 0012): diretoria e membros criam (janelas fatiadas em horários + prazo + convidados). Convidados criam um grupo ou entram num (um grupo por pessoa); qualquer integrante reserva/troca/solta o horário do grupo até o prazo; um horário tem no máximo um grupo. Quem criou ou a diretoria mexe em grupos/pessoas/horários e confirma → um evento por grupo, visível aos integrantes (e editável só pela diretoria, pela regra da 0007). Só quem criou exclui. Lógica pura em `lib/agendamento.ts`; UI em `components/agendamento/`.
 - **Membros:** só admins (que são da diretoria) cadastram, editam, aprovam pedidos de acesso.
 
 ## Pendências

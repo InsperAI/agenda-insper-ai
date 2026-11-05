@@ -4,6 +4,7 @@ import { useState } from "react";
 import AbasPedidos from "@/components/votacao/AbasPedidos";
 import GradeVotacao from "@/components/votacao/GradeVotacao";
 import ListaPedidos, { VazioPedidos } from "@/components/votacao/ListaPedidos";
+import type { ItemPedido } from "@/lib/itensPedidos";
 import ResultadoVotacao from "@/components/votacao/ResultadoVotacao";
 import type { RespostaRow, VotacaoRow } from "@/lib/supabase/tipos";
 import { chaveBloco } from "@/lib/votacao";
@@ -64,29 +65,25 @@ export default function GaleriaVotacao() {
   );
 }
 
-const AGORA = Date.parse("2026-11-03T15:00:00Z");
-const pedido = (id: string, titulo: string, extra: Partial<VotacaoRow>): VotacaoRow => ({ ...VOTACAO, id, titulo, ...extra });
-
 /** Página Disponibilidade: abas e seções. */
 function ListaDePedidos() {
-  const comum = {
-    respondidas: new Set(["b"]),
-    andamento: new Map([
-      ["a", "pedido por Lucas Marchesini · 2 de 6 responderam"],
-      ["b", "4 de 6 responderam"],
-      ["c", "pedido por Guilherme Leal · 6 de 6 responderam"],
-    ]),
-    meuId: "eu",
-    agora: AGORA,
-  };
+  const item = (id: string, titulo: string, detalhe: string, extra: Partial<ItemPedido> = {}): ItemPedido => ({ id, titulo, href: "#", detalhe, minha: false, ...extra });
   return (
     <div className="wrap-estreito flex flex-col gap-6 px-0">
-      <AbasPedidos ativa="abertos" abertos={3} encerrados={5} />
-      <ListaPedidos titulo="Esperando sua resposta · 1" votacoes={[pedido("a", "Bate papo sobre o Núcleo de Projetos", { prazo: "2026-11-05T18:00:00Z" })]} {...comum} />
-      <ListaPedidos titulo="Falta confirmar o horário · 1" votacoes={[pedido("c", "Reunião semanal diretoria", { prazo: "2026-11-01T15:00:00Z" })]} {...comum} />
-      <ListaPedidos titulo="Em andamento · 1" votacoes={[pedido("b", "Planejamento do semestre", { prazo: "2026-11-07T18:00:00Z", criado_por: "eu" })]} {...comum} />
-      <AbasPedidos ativa="encerrados" abertos={0} encerrados={0} />
-      <VazioPedidos texto="Nenhum pedido aberto agora." dica="Para marcar uma reunião, use “Pedir disponibilidade”." />
+      <AbasPedidos ativa="abertos" abertos={4} encerrados={5} />
+      <ListaPedidos
+        titulo="Esperando você · 2"
+        itens={[
+          item("g", "Apresentação intermediária · projeto final", "12 horários · 3 grupos (2 com horário) · até 10/11/2026 às 18h · pedido por Gustavo Leal", { selo: "grupos" }),
+          item("a", "Bate papo sobre o Núcleo de Projetos", "1h · data única · até 05/11/2026 às 15h · pedido por Lucas Marchesini"),
+        ]}
+      />
+      <ListaPedidos titulo="Falta confirmar · 1" itens={[item("c", "Reunião semanal diretoria", "1h · data única · prazo encerrado · pedido por Guilherme Leal · 6 de 6 responderam")]} />
+      <ListaPedidos
+        titulo="Em andamento · 1"
+        itens={[item("b", "Planejamento do semestre", "1h · data única · até 07/11/2026 às 15h · 4 de 6 responderam", { minha: true, feito: "respondida" })]}
+      />
+      <VazioPedidos texto="Nenhum pedido aberto agora." dica="Para marcar uma reunião ou horários de grupos, use “Novo pedido”." />
     </div>
   );
 }

@@ -27,9 +27,14 @@ function pedido(id: string, extra: Partial<VotacaoRow> = {}): VotacaoRow {
 
 const base = { convidado: new Set<string>(), respondidas: new Set<string>(), agora: AGORA };
 
+/** Disponibilidade: pendente = convidado e ainda sem resposta. */
+function separar(lista: VotacaoRow[], o: typeof base & { eu: { id: string; nivel: "diretoria" | "membro" | "trainee" } }) {
+  return separarPedidos(lista, { eu: o.eu, agora: o.agora, pendente: (v) => o.convidado.has(v.id) && !o.respondidas.has(v.id) });
+}
+
 describe("separarPedidos", () => {
   it("confirmados vão para encerrados", () => {
-    const r = separarPedidos([pedido("a", { confirmada_em: iso(AGORA) })], { ...base, eu: { id: "eu", nivel: "membro" } });
+    const r = separar([pedido("a", { confirmada_em: iso(AGORA) })], { ...base, eu: { id: "eu", nivel: "membro" } });
     expect(r.encerrados.map((v) => v.id)).toEqual(["a"]);
     expect(r.totalAbertos).toBe(0);
   });
@@ -37,13 +42,13 @@ describe("separarPedidos", () => {
   it("vencido sem horário há mais de 7 dias vai para encerrados; há menos, continua aberto", () => {
     const velho = pedido("velho", { prazo: iso(AGORA - 8 * DIA) });
     const recente = pedido("recente", { prazo: iso(AGORA - 2 * DIA) });
-    const r = separarPedidos([velho, recente], { ...base, eu: { id: "eu", nivel: "diretoria" } });
+    const r = separar([velho, recente], { ...base, eu: { id: "eu", nivel: "diretoria" } });
     expect(r.encerrados.map((v) => v.id)).toEqual(["velho"]);
     expect(r.decidir.map((v) => v.id)).toEqual(["recente"]);
   });
 
   it("convidado que ainda não respondeu vê em 'responder'", () => {
-    const r = separarPedidos([pedido("a"), pedido("b")], { ...base, convidado: new Set(["a", "b"]), respondidas: new Set(["b"]), eu: { id: "eu", nivel: "membro" } });
+    const r = separar([pedido("a"), pedido("b")], { ...base, convidado: new Set(["a", "b"]), respondidas: new Set(["b"]), eu: { id: "eu", nivel: "membro" } });
     expect(r.responder.map((v) => v.id)).toEqual(["a"]);
     expect(r.andamento.map((v) => v.id)).toEqual(["b"]);
   });
@@ -51,15 +56,15 @@ describe("separarPedidos", () => {
   it("prazo vencido: diretoria e quem pediu decidem; o resto só acompanha", () => {
     const vencidoDeOutro = pedido("a", { prazo: iso(AGORA - DIA) });
     const vencidoMeu = pedido("b", { prazo: iso(AGORA - DIA), criado_por: "eu" });
-    const membro = separarPedidos([vencidoDeOutro, vencidoMeu], { ...base, eu: { id: "eu", nivel: "membro" } });
+    const membro = separar([vencidoDeOutro, vencidoMeu], { ...base, eu: { id: "eu", nivel: "membro" } });
     expect(membro.decidir.map((v) => v.id)).toEqual(["b"]);
     expect(membro.andamento.map((v) => v.id)).toEqual(["a"]);
-    const diretoria = separarPedidos([vencidoDeOutro], { ...base, eu: { id: "d", nivel: "diretoria" } });
+    const diretoria = separar([vencidoDeOutro], { ...base, eu: { id: "d", nivel: "diretoria" } });
     expect(diretoria.decidir.map((v) => v.id)).toEqual(["a"]);
   });
 
   it("totalAbertos soma as três seções", () => {
-    const r = separarPedidos([pedido("a"), pedido("b", { prazo: iso(AGORA - DIA) })], { ...base, convidado: new Set(["a"]), eu: { id: "d", nivel: "diretoria" } });
+    const r = separar([pedido("a"), pedido("b", { prazo: iso(AGORA - DIA) })], { ...base, convidado: new Set(["a"]), eu: { id: "d", nivel: "diretoria" } });
     expect(r.totalAbertos).toBe(2);
   });
 });

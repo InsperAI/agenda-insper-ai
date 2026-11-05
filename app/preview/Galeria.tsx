@@ -16,6 +16,7 @@ import { tituloMes, tituloSemana } from "@/lib/datas";
 import { agoraSP, chaveDia, gradeDoMes, inicioDaSemana, inicioDoDia, inicioDoMes } from "@/lib/fuso";
 import { expandir, type Ocorrencia } from "@/lib/recorrencia";
 import type { EventoRow, MembroRow } from "@/lib/supabase/tipos";
+import GaleriaAgendamento from "./GaleriaAgendamento";
 import GaleriaVotacao from "./GaleriaVotacao";
 import Assinatura from "@/components/agenda/Assinatura";
 
@@ -200,6 +201,7 @@ export default function Galeria() {
         </section>
 
         <GaleriaVotacao />
+        <GaleriaAgendamento />
         <section id="conectar" className="wrap-estreito flex flex-col gap-4 px-0">
           <h2 className="t-h3">Conectar</h2>
           <Assinatura token={"0".repeat(48)} />

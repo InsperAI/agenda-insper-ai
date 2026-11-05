@@ -120,6 +120,29 @@ export type RespostaRow = { votacao_id: string; member_id: string; blocos: strin
 
 export type MapaVotacao = { total: number; respondidos: number; contagem: Record<string, number> };
 
+/** Agendamento em grupo (0012): horários fatiados, grupos estilo Classroom, um horário por grupo. */
+export type AgendamentoRow = {
+  id: string;
+  titulo: string;
+  descricao: string;
+  prazo: string;
+  niveis: Nivel[];
+  criado_por: string | null;
+  confirmado_em: string | null;
+  created_at: string;
+};
+export type HorarioRow = { id: string; agendamento_id: string; inicio: string; fim: string };
+export type GrupoRow = {
+  id: string;
+  agendamento_id: string;
+  nome: string;
+  horario_id: string | null;
+  evento_id: string | null;
+  criado_por: string | null;
+  created_at: string;
+};
+export type IntegranteRow = { agendamento_id: string; member_id: string; grupo_id: string };
+
 /** `email` vem do JWT (default no banco); o cliente não manda. */
 export type PedidoInsert = { name: string; cargo?: string; nivel?: NivelPublico };
 
@@ -162,6 +185,11 @@ export type Database = {
         Update: { blocos: string[] };
         Relationships: [];
       };
+      agendamentos: { Row: AgendamentoRow; Insert: never; Update: never; Relationships: [] };
+      agendamento_convidados: { Row: { agendamento_id: string; member_id: string }; Insert: never; Update: never; Relationships: [] };
+      agendamento_horarios: { Row: HorarioRow; Insert: never; Update: never; Relationships: [] };
+      agendamento_grupos: { Row: GrupoRow; Insert: never; Update: never; Relationships: [] };
+      agendamento_integrantes: { Row: IntegranteRow; Insert: never; Update: never; Relationships: [] };
       access_requests: {
         Row: PedidoRow;
         Insert: PedidoInsert;
@@ -199,6 +227,29 @@ export type Database = {
       confirmar_votacao: { Args: { p_id: string; p_inicio: string; p_freq: Frequencia | null; p_until: string | null }; Returns: string };
       resumo_votacao: { Args: { p_codigo: string }; Returns: ResumoVotacao[] };
       reabrir_votacao: { Args: { p_id: string; p_prazo: string; p_dias: string[] | null }; Returns: undefined };
+      criar_agendamento: {
+        Args: {
+          p_titulo: string;
+          p_descricao: string;
+          p_prazo: string;
+          p_niveis: Nivel[];
+          p_incluir: string[];
+          p_excluir: string[];
+          p_horarios: { inicio: string; fim: string }[];
+        };
+        Returns: string;
+      };
+      criar_grupo: { Args: { p_ag: string; p_nome: string }; Returns: string };
+      entrar_grupo: { Args: { p_grupo: string }; Returns: undefined };
+      sair_grupo: { Args: { p_ag: string }; Returns: undefined };
+      reservar_horario: { Args: { p_ag: string; p_horario: string | null }; Returns: undefined };
+      org_criar_grupo: { Args: { p_ag: string; p_nome: string }; Returns: string };
+      org_renomear_grupo: { Args: { p_grupo: string; p_nome: string }; Returns: undefined };
+      org_excluir_grupo: { Args: { p_grupo: string }; Returns: undefined };
+      org_mover_pessoa: { Args: { p_ag: string; p_member: string; p_grupo: string | null }; Returns: undefined };
+      org_definir_horario: { Args: { p_grupo: string; p_horario: string | null }; Returns: undefined };
+      org_estender_prazo: { Args: { p_ag: string; p_prazo: string }; Returns: undefined };
+      confirmar_agendamento: { Args: { p_ag: string }; Returns: number };
     };
     Enums: { categoria: Categoria; frequencia: Frequencia; nivel: Nivel; modo_votacao: ModoVotacao };
     CompositeTypes: { [_ in never]: never };

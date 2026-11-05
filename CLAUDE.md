@@ -40,7 +40,8 @@ Depois de **renomear uma rota**, o typecheck acusa `.next/types/validator.ts` ap
 |---|---|
 | Níveis, quem vê/cria/edita | `lib/niveis.ts`, migrações 0002, 0003, 0007, 0008 |
 | Eventos, séries, exceções | `lib/eventos.ts`, `lib/recorrencia.ts`, `components/agenda/` |
-| Disponibilidade (when2meet) | `lib/votacao.ts`, `components/votacao/`, `app/(app)/disponibilidade/`, 0004–0006 |
+| Disponibilidade (when2meet) | `lib/votacao.ts`, `lib/pedidos.ts`, `lib/itensPedidos.ts`, `components/votacao/`, `app/(app)/disponibilidade/`, 0004–0006, 0009–0011 |
+| Horários por grupo (Classroom) | `lib/agendamento.ts`, `components/agendamento/`, `app/(app)/disponibilidade/g/`, 0012 |
 | Link curto + prévia WhatsApp | `app/d/[codigo]/`, `lib/og.tsx`, `lib/resumoVotacao.ts`, 0006 |
 | Membros, pedidos de acesso | `components/admin/`, `app/sem-acesso/`, 0003 |
 | Login (Google + código no e-mail) | `app/entrar/`, `lib/login.ts`, `proxy.ts`, `app/auth/` |
