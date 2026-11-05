@@ -12,6 +12,7 @@ npm run dev -- -p 3002   # a 3001 costuma estar ocupada por um container Docker 
 npm test                 # Vitest (tests/*.test.ts), lógica pura
 npm run typecheck && npm run lint
 npm run build            # rode antes de cada push; também regenera .next/types
+sh supabase/testes/rodar.sh  # migrações + cenário num Postgres descartável (Docker); rode antes de entregar uma migração
 ```
 
 Depois de **renomear uma rota**, o typecheck acusa `.next/types/validator.ts` apontando para a pasta antiga: é cache. `npm run build` resolve.
