@@ -19,7 +19,7 @@ _Atualizado em 29/10/2026. Atualize este arquivo quando algo daqui mudar._
 
 ## Migrações aplicadas em produção
 
-Todas de `0001` a `0010` (rodadas à mão no SQL Editor, em ordem):
+Todas de `0001` a `0011` (rodadas à mão no SQL Editor, em ordem):
 
 | # | O quê |
 |---|---|
@@ -33,6 +33,7 @@ Todas de `0001` a `0010` (rodadas à mão no SQL Editor, em ordem):
 | 0008 | Membros também abrem pedidos de disponibilidade e convidam qualquer pessoa |
 | 0009 | Pedido vencido e não confirmado sai do contador da aba 7 dias depois do prazo |
 | 0010 | Diretoria também confirma/reabre qualquer pedido; evento fica no nome de quem pediu |
+| 0011 | Quem entra num nível (cadastro ou mudança) vira convidado dos pedidos abertos para esse nível |
 
 ## Regras de acesso (resumo)
 
