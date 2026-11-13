@@ -19,7 +19,7 @@ _Atualizado em 13/11/2026. Atualize este arquivo quando algo daqui mudar._
 
 ## Migrações aplicadas em produção
 
-Todas de `0001` a `0012` (rodadas à mão no SQL Editor, em ordem):
+Todas de `0001` a `0013` (rodadas à mão no SQL Editor, em ordem):
 
 | # | O quê |
 |---|---|
@@ -35,7 +35,7 @@ Todas de `0001` a `0012` (rodadas à mão no SQL Editor, em ordem):
 | 0010 | Diretoria também confirma/reabre qualquer pedido; evento fica no nome de quem pediu |
 | 0011 | Quem entra num nível (cadastro ou mudança) vira convidado dos pedidos abertos para esse nível |
 | 0012 | **Horários por grupo** (agendamentos): grupos estilo Classroom, um horário por grupo; corrige `pode_decidir_votacao` para pedido sem dono |
-| 0013 | **A rodar.** `feed_buscas`: o feed anota, por pessoa e por app (Google/Apple/Outlook), a primeira e a última busca e quantas foram; a página Conectar mostra "buscou há 9 h · em média a cada 13 h". O código funciona sem ela (o bloco só não aparece). |
+| 0013 | `feed_buscas`: o feed anota, por pessoa e por app (Google/Apple/Outlook), a primeira e a última busca e quantas foram; a página Conectar mostra "buscou há 9 h · em média a cada 13 h". O código funciona sem ela (o bloco só não aparece). |
 
 ## Sincronização do calendário (feed .ics)
 
