@@ -19,6 +19,7 @@ import type { EventoRow, MembroRow } from "@/lib/supabase/tipos";
 import GaleriaAgendamento from "./GaleriaAgendamento";
 import GaleriaVotacao from "./GaleriaVotacao";
 import Assinatura from "@/components/agenda/Assinatura";
+import BuscasFeed from "@/components/agenda/BuscasFeed";
 
 const MEMBROS: MembroRow[] = [
   { id: "m1", email: "gui@insper.ai", name: "Guilherme Leal", cargo: "Presidente", nivel: "diretoria", is_admin: true, created_at: "2026-08-01T12:00:00Z" },
@@ -204,6 +205,14 @@ export default function Galeria() {
         <GaleriaAgendamento />
         <section id="conectar" className="wrap-estreito flex flex-col gap-4 px-0">
           <h2 className="t-h3">Conectar</h2>
+          <BuscasFeed
+            agora={new Date("2026-11-13T15:00:00Z")}
+            buscas={[
+              { cliente: "google", primeira_em: "2026-11-05T10:00:00Z", ultima_em: "2026-11-13T06:00:00Z", buscas: 15 },
+              { cliente: "apple", primeira_em: "2026-11-12T15:00:00Z", ultima_em: "2026-11-13T14:48:00Z", buscas: 96 },
+              { cliente: "navegador", primeira_em: "2026-11-12T15:00:00Z", ultima_em: "2026-11-13T14:59:00Z", buscas: 2 },
+            ]}
+          />
           <Assinatura token={"0".repeat(48)} />
         </section>
 

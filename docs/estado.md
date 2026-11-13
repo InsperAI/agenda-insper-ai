@@ -1,6 +1,6 @@
 # Estado do projeto
 
-_Atualizado em 29/10/2026. Atualize este arquivo quando algo daqui mudar._
+_Atualizado em 13/11/2026. Atualize este arquivo quando algo daqui mudar._
 
 ## No ar
 
@@ -35,6 +35,15 @@ Todas de `0001` a `0012` (rodadas à mão no SQL Editor, em ordem):
 | 0010 | Diretoria também confirma/reabre qualquer pedido; evento fica no nome de quem pediu |
 | 0011 | Quem entra num nível (cadastro ou mudança) vira convidado dos pedidos abertos para esse nível |
 | 0012 | **Horários por grupo** (agendamentos): grupos estilo Classroom, um horário por grupo; corrige `pode_decidir_votacao` para pedido sem dono |
+| 0013 | **A rodar.** `feed_buscas`: o feed anota, por pessoa e por app (Google/Apple/Outlook), a primeira e a última busca e quantas foram; a página Conectar mostra "buscou há 9 h · em média a cada 13 h". O código funciona sem ela (o bloco só não aparece). |
+
+## Sincronização do calendário (feed .ics)
+
+- Assinatura por link é **puxada pelo app de calendário**, no ritmo dele: Google a cada ~12–24 h (sem botão de atualizar; remover e adicionar força uma busca), Apple segue o "Obter Dados" do aparelho, Outlook ~1 h. Não dá para empurrar mudanças por um link .ics.
+- O feed sobe `SEQUENCE`/`LAST-MODIFIED` da série inteira quando qualquer linha dela muda (antes, "excluir somente esta" não subia a SEQUENCE e Google/Outlook podiam manter a ocorrência apagada) e manda `Cache-Control: no-store`.
+- Para diagnosticar alguém: Supabase → SQL Editor →
+  `select m.name, b.cliente, b.ultima_em, b.buscas, (b.ultima_em - b.primeira_em) / nullif(b.buscas - 1, 0) as intervalo_medio, b.agente from feed_buscas b join members m on m.id = b.member_id order by b.ultima_em desc;`
+  Sem linha do Google para a pessoa = o Google nunca chegou ao feed (link errado/antigo ou bloqueio); `ultima_em` antiga = o Google parou de buscar.
 
 ## Regras de acesso (resumo)
 
@@ -78,6 +87,7 @@ Template do e-mail (já aplicado em "Magic link or OTP" e "Confirm sign up"):
 - **"Copiar link" sempre com o domínio de produção**, mesmo rodando local (o usuário dispensou por ora).
 - **Domínio próprio** (ex.: `agenda.insperai.com.br`) na Vercel; tela do Google mostraria esse domínio em vez de `…supabase.co` só com domínio customizado no Supabase (pago).
 - Trainees criarem eventos / pedidos: hoje não podem (decisão do usuário).
+- **Confirmar presença (vou / não vou)** — pedido de um membro em 13/11/2026: ver quem vai a cada evento. Um link .ics é só leitura: o "Sim/Não" do calendário só existe em **convite** (organizador + convidados). Caminhos: (a) botão no app + lista de quem vai; (b) convites de verdade pela API do Google Agenda com uma conta da Insper AI como organizadora (resposta no próprio calendário e mudanças na hora, mas exige OAuth, sincronizar cada edição e mandar convite a todo mundo). Em discussão.
 
 ## Mensagem modelo para o grupo
 

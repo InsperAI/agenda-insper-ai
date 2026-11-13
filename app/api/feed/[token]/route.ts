@@ -1,5 +1,6 @@
 import { addMonths } from "date-fns";
-import { NextResponse } from "next/server";
+import { after, NextResponse } from "next/server";
+import { identificarCliente } from "@/lib/feed";
 import { serializarCalendario } from "@/lib/ics";
 import { visiveisPara } from "@/lib/niveis";
 import { supabaseAdmin } from "@/lib/supabase/admin";
@@ -13,7 +14,7 @@ export const runtime = "nodejs";
  * o token é o que prova quem está pedindo. A service role ignora a RLS, então a
  * visibilidade por nível (público do evento) é aplicada aqui com `visiveisPara`.
  */
-export async function GET(_request: Request, { params }: { params: Promise<{ token: string }> }) {
+export async function GET(request: Request, { params }: { params: Promise<{ token: string }> }) {
   const { token } = await params;
   if (!/^[a-f0-9]{48}$/.test(token)) return naoEncontrado();
 
@@ -31,12 +32,28 @@ export async function GET(_request: Request, { params }: { params: Promise<{ tok
   });
   if (error) return new NextResponse("Erro ao gerar o calendário.", { status: 500 });
 
-  return new NextResponse(serializarCalendario(visiveisPara(linhas ?? [], membro), "Insper AI · Agenda", agora), {
+  const corpo = serializarCalendario(visiveisPara(linhas ?? [], membro), "Insper AI · Agenda", agora);
+
+  // Depois de responder: anota que este app buscou (página Conectar mostra). Falhar aqui não afeta o feed.
+  const agente = request.headers.get("user-agent") ?? "";
+  after(async () => {
+    try {
+      const { error: erroBusca } = await admin.rpc("registrar_busca_feed", { p_member: membro.id, p_cliente: identificarCliente(agente), p_agente: agente });
+      if (erroBusca) console.error("[feed] não registrou a busca:", erroBusca.message);
+    } catch (e) {
+      console.error("[feed] não registrou a busca:", e instanceof Error ? e.message : e);
+    }
+  });
+
+  return new NextResponse(corpo, {
     status: 200,
     headers: {
       "Content-Type": "text/calendar; charset=utf-8",
       "Content-Disposition": 'inline; filename="agenda-insper-ai.ics"',
-      "Cache-Control": "private, max-age=300",
+      // Nada de cache: quando o calendário finalmente vem buscar, tem de levar a versão de agora.
+      "Cache-Control": "no-cache, no-store, must-revalidate, max-age=0",
+      Pragma: "no-cache",
+      Expires: "0",
     },
   });
 }

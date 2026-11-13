@@ -104,6 +104,36 @@ describe("ics", () => {
   });
 });
 
+describe("versão dos eventos (o que faz o calendário aplicar a mudança)", () => {
+  const sequencias = (ics: string) => [...ics.matchAll(/^SEQUENCE:(\d+)$/gm)].map((m) => Number(m[1]));
+  const depois = "2026-11-13T15:00:00.654321+00:00";
+
+  it("excluir uma ocorrência sobe a SEQUENCE da série (o EXDATE fica no mestre)", () => {
+    const antes = serializarCalendario([semanal], "Teste", agora);
+    const comCancelada = serializarCalendario([semanal, { ...cancelada, updated_at: depois }], "Teste", agora);
+    expect(comCancelada).toContain("EXDATE;TZID=America/Sao_Paulo:20261013T190000");
+    expect(sequencias(comCancelada)[0]).toBeGreaterThan(sequencias(antes)[0]);
+  });
+
+  it("sobrescrita nunca tem SEQUENCE menor que a do mestre", () => {
+    const ics = serializarCalendario([semanal, { ...cancelada, updated_at: depois }, movida], "Teste", agora);
+    const [mestre, sobrescrita] = sequencias(ics);
+    expect(sobrescrita).toBeGreaterThanOrEqual(mestre);
+  });
+
+  it("LAST-MODIFIED em UTC acompanha a última mudança da série", () => {
+    const ics = serializarCalendario([semanal, { ...cancelada, updated_at: depois }], "Teste", agora);
+    expect(ics).toContain("\r\nLAST-MODIFIED:20261113T150000Z\r\n");
+  });
+
+  it("evento único usa o próprio updated_at", () => {
+    const unico = linha({ id: "55555555-5555-5555-5555-555555555555", start_at: spDe(2026, 11, 20, 9).toISOString(), end_at: spDe(2026, 11, 20, 10).toISOString(), updated_at: depois });
+    const ics = serializarCalendario([unico], "Teste", agora);
+    expect(ics).toContain("\r\nLAST-MODIFIED:20261113T150000Z\r\n");
+    expect(sequencias(ics)[0]).toBe(Math.floor(Date.parse(depois) / 1000) - 1_700_000_000);
+  });
+});
+
 describe("cabeçalho do calendário", () => {
   it("pede atualização de hora em hora a quem respeita (Outlook, Thunderbird…)", () => {
     const ics = serializarCalendario([], "Teste", new Date("2026-11-04T12:00:00Z"));

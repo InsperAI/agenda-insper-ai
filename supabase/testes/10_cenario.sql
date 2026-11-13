@@ -222,4 +222,24 @@ reset role;
 select teste.ok(not exists (select 1 from agendamentos where id = teste.v('ag')), 'quem criou exclui');
 select teste.ok((select count(*) from events where title like 'Apresentação intermediária · %') = 2, '…e os eventos continuam na agenda');
 
+\echo '── Buscas do feed (0013) ──'
+reset role;
+grant usage on schema teste to service_role;
+grant execute on all functions in schema teste to service_role;
+set role service_role;
+select registrar_busca_feed(teste.v('m2'), 'google', 'Google-Calendar-Importer');
+select registrar_busca_feed(teste.v('m2'), 'google', 'Google-Calendar-Importer');
+select registrar_busca_feed(teste.v('m2'), 'apple', repeat('x', 500));
+reset role;
+select teste.ok((select buscas from feed_buscas where member_id = teste.v('m2') and cliente = 'google') = 2, 'feed: segunda busca do mesmo app soma, não duplica');
+select teste.ok((select length(agente) from feed_buscas where member_id = teste.v('m2') and cliente = 'apple') = 300, 'feed: agente cortado em 300 caracteres');
+select teste.como('m2@t'); set role authenticated;
+select teste.ok((select count(*) from feed_buscas) = 2, 'feed: a pessoa vê as próprias buscas');
+select teste.erro(format('select registrar_busca_feed(%L, %L, %L)', teste.v('m2'), 'google', 'x'), 'permission denied', 'feed: logado não registra busca');
+select teste.erro(format('insert into feed_buscas (member_id, cliente) values (%L, %L)', teste.v('m2'), 'outro'), 'permission denied', 'feed: logado não escreve direto na tabela');
+reset role;
+select teste.como('t1@t'); set role authenticated;
+select teste.ok((select count(*) from feed_buscas) = 0, 'feed: ninguém vê as buscas dos outros');
+reset role;
+
 \echo 'TUDO OK'

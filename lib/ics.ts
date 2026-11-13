@@ -85,6 +85,8 @@ type OpcoesVevent = {
   uid: string;
   inicio: Date;
   fim: Date;
+  /** Última mudança que este VEVENT reflete; vira SEQUENCE e LAST-MODIFIED. */
+  versao: Date;
   recurrenceId?: Date | null;
   rrule?: string | null;
   exdates?: Date[];
@@ -95,7 +97,9 @@ function vevent(e: EventoRow, o: OpcoesVevent, agora: Date): string[] {
     "BEGIN:VEVENT",
     `UID:${o.uid}`,
     `DTSTAMP:${fmtUtc(agora)}`,
-    `SEQUENCE:${Math.max(0, Math.floor(Date.parse(e.updated_at) / 1000) - 1_700_000_000)}`,
+    `LAST-MODIFIED:${fmtUtc(o.versao)}`,
+    // Google e Outlook só aplicam a mudança de um evento já importado se a SEQUENCE subir.
+    `SEQUENCE:${Math.max(0, Math.floor(o.versao.getTime() / 1000) - 1_700_000_000)}`,
     propData("DTSTART", o.inicio, e.all_day),
     propData("DTEND", o.fim, e.all_day),
     `SUMMARY:${escapar(e.title)}`,
@@ -133,6 +137,9 @@ function envolver(nome: string, corpo: string[]): string {
 
 const uid = (id: string) => `${id}@${DOMINIO}`;
 
+/** A mudança mais recente entre as linhas: o mestre e todas as filhas da série, inclusive canceladas. */
+const ultimaMudanca = (linhas: EventoRow[]) => new Date(Math.max(...linhas.map((l) => Date.parse(l.updated_at))));
+
 /** O feed completo: todas as linhas que `events_in_range` devolveu para a janela do feed. */
 export function serializarCalendario(linhas: EventoRow[], nome = "Insper AI · Diretoria", agora = new Date()): string {
   const corpo: string[] = [];
@@ -143,11 +150,14 @@ export function serializarCalendario(linhas: EventoRow[], nome = "Insper AI · D
   for (const m of mestres) {
     const minhas = filhas.filter((f) => f.series_id === m.id);
     const exdates = minhas.filter((f) => f.cancelled).map((f) => new Date(f.original_start!));
-    corpo.push(...vevent(m, { uid: uid(m.id), inicio: new Date(m.start_at), fim: new Date(m.end_at), rrule: rrule(m), exdates }, agora));
+    // "Excluir somente esta" só cria uma filha cancelada; o mestre não muda, mas ganha um EXDATE.
+    // Toda a série usa a versão mais nova, para o EXDATE contar e nenhuma sobrescrita ficar atrás do mestre.
+    const versao = ultimaMudanca([m, ...minhas]);
+    corpo.push(...vevent(m, { uid: uid(m.id), inicio: new Date(m.start_at), fim: new Date(m.end_at), versao, rrule: rrule(m), exdates }, agora));
     for (const f of minhas) {
       if (f.cancelled) continue;
       corpo.push(
-        ...vevent(f, { uid: uid(m.id), inicio: new Date(f.start_at), fim: new Date(f.end_at), recurrenceId: new Date(f.original_start!) }, agora),
+        ...vevent(f, { uid: uid(m.id), inicio: new Date(f.start_at), fim: new Date(f.end_at), versao, recurrenceId: new Date(f.original_start!) }, agora),
       );
     }
   }
@@ -155,7 +165,7 @@ export function serializarCalendario(linhas: EventoRow[], nome = "Insper AI · D
   // Filha cujo mestre não veio (não deveria acontecer com events_in_range, mas não perdemos o evento).
   for (const f of filhas) {
     if (f.cancelled || idsMestres.has(f.series_id!)) continue;
-    corpo.push(...vevent(f, { uid: uid(f.id), inicio: new Date(f.start_at), fim: new Date(f.end_at) }, agora));
+    corpo.push(...vevent(f, { uid: uid(f.id), inicio: new Date(f.start_at), fim: new Date(f.end_at), versao: ultimaMudanca([f]) }, agora));
   }
 
   return envolver(nome, corpo);
@@ -164,5 +174,5 @@ export function serializarCalendario(linhas: EventoRow[], nome = "Insper AI · D
 /** Um único VEVENT para "baixar .ics" de uma ocorrência (sem recorrência). */
 export function serializarOcorrencia(occ: Ocorrencia, agora = new Date()): string {
   const id = occ.virtual ? `${occ.evento.id}_${occ.inicio.getTime()}` : occ.evento.id;
-  return envolver(occ.evento.title, vevent(occ.evento, { uid: uid(id), inicio: occ.inicio, fim: occ.fim }, agora));
+  return envolver(occ.evento.title, vevent(occ.evento, { uid: uid(id), inicio: occ.inicio, fim: occ.fim, versao: ultimaMudanca([occ.evento]) }, agora));
 }

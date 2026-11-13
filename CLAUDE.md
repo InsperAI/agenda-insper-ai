@@ -43,6 +43,7 @@ Depois de **renomear uma rota**, o typecheck acusa `.next/types/validator.ts` ap
 | Eventos, séries, exceções | `lib/eventos.ts`, `lib/recorrencia.ts`, `components/agenda/` |
 | Disponibilidade (when2meet) | `lib/votacao.ts`, `lib/pedidos.ts`, `lib/itensPedidos.ts`, `components/votacao/`, `app/(app)/disponibilidade/`, 0004–0006, 0009–0011 |
 | Horários por grupo (Classroom) | `lib/agendamento.ts`, `components/agendamento/`, `app/(app)/disponibilidade/g/`, 0012 |
+| Feed .ics (Conectar) e quem busca | `lib/ics.ts`, `lib/feed.ts`, `app/api/feed/[token]/`, `components/agenda/Assinatura.tsx`, `BuscasFeed.tsx`, 0013; diagnóstico em `docs/estado.md` |
 | Link curto + prévia WhatsApp | `app/d/[codigo]/`, `lib/og.tsx`, `lib/resumoVotacao.ts`, 0006 |
 | Membros, pedidos de acesso | `components/admin/`, `app/sem-acesso/`, 0003 |
 | Login (Google + código no e-mail) | `app/entrar/`, `lib/login.ts`, `proxy.ts`, `app/auth/` |

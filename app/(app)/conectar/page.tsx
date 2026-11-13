@@ -1,12 +1,17 @@
 import type { Metadata } from "next";
 import Assinatura from "@/components/agenda/Assinatura";
+import BuscasFeed from "@/components/agenda/BuscasFeed";
 import { supabaseServidor } from "@/lib/supabase/server";
 
 export const metadata: Metadata = { title: "Conectar" };
 
 export default async function PaginaConectar() {
   const supabase = await supabaseServidor();
-  const { data } = await supabase.from("feed_tokens").select("token").maybeSingle();
+  const [{ data }, { data: buscas }] = await Promise.all([
+    supabase.from("feed_tokens").select("token").maybeSingle(),
+    // Sem a 0013 a consulta falha e o bloco simplesmente não aparece.
+    supabase.from("feed_buscas").select("cliente,primeira_em,ultima_em,buscas"),
+  ]);
 
   return (
     <div className="wrap-estreito flex flex-col gap-6">
@@ -17,6 +22,7 @@ export default async function PaginaConectar() {
           depende do app (veja abaixo).
         </p>
       </div>
+      <BuscasFeed buscas={buscas ?? []} agora={new Date()} />
       <Assinatura token={data?.token ?? null} />
     </div>
   );

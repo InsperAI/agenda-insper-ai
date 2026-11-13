@@ -89,12 +89,13 @@ export default function Assinatura({ token: tokenInicial }: { token: string | nu
         <p className="text-[0.95rem] text-ia-petroleo">Mudança demorando para aparecer?</p>
         <ul className="mt-2 flex list-disc flex-col gap-1.5 pl-5 text-[0.8125rem] text-ia-apoio marker:text-ia-meta">
           <li>
-            <strong className="font-medium text-ia-corpo">Google Agenda</strong> busca agendas por link só a cada 12 a 24 horas, e não dá para forçar. Não adianta remover e
-            adicionar de novo. Se você precisa ver mudanças rápido, use o Calendário da Apple ou abra esta agenda no site.
+            <strong className="font-medium text-ia-corpo">Google Agenda</strong> busca agendas por link no tempo dele, em geral a cada 12 a 24 horas, e não tem botão de
+            atualizar. Remover e adicionar de novo força uma busca na hora (mas a cor e os avisos voltam ao padrão). Se você precisa ver mudanças rápido, use o Calendário da
+            Apple ou abra esta agenda no site.
           </li>
           <li>
-            <strong className="font-medium text-ia-corpo">Calendário da Apple</strong> segue o “Obter Dados” que você escolheu (veja acima). Em Modo de Pouca Energia o iPhone
-            pode atrasar.
+            <strong className="font-medium text-ia-corpo">Calendário da Apple</strong> segue o “Obter Dados” que você escolheu (veja acima). Para puxar na hora: abra o
+            Calendário → Calendários (embaixo) → arraste a lista para baixo. Em Modo de Pouca Energia o iPhone pode atrasar.
           </li>
           <li>A agenda aqui no site está sempre atualizada.</li>
         </ul>

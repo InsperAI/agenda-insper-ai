@@ -1,5 +1,5 @@
 /**
- * Tipos do banco, escritos à mão para espelhar supabase/migrations/ (0001–0006).
+ * Tipos do banco, escritos à mão para espelhar supabase/migrations/ (0001–0013).
  * Se o esquema mudar, mude a migração primeiro e depois este arquivo.
  */
 
@@ -36,6 +36,16 @@ export type FeedTokenRow = {
   member_id: string;
   token: string;
   created_at: string;
+};
+
+/** Uma linha por pessoa e por app de calendário que busca o feed (0013). */
+export type FeedBuscaRow = {
+  member_id: string;
+  cliente: "google" | "apple" | "outlook" | "navegador" | "outro";
+  agente: string;
+  primeira_em: string;
+  ultima_em: string;
+  buscas: number;
 };
 
 export type EventoRow = {
@@ -161,6 +171,12 @@ export type Database = {
         Update: Partial<FeedTokenRow>;
         Relationships: [];
       };
+      feed_buscas: {
+        Row: FeedBuscaRow;
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
       events: {
         Row: EventoRow;
         Insert: EventoInsert;
@@ -201,6 +217,7 @@ export type Database = {
     Functions: {
       events_in_range: { Args: { p_ini: string; p_fim: string }; Returns: EventoRow[] };
       rotate_feed_token: { Args: Record<PropertyKey, never>; Returns: string };
+      registrar_busca_feed: { Args: { p_member: string; p_cliente: FeedBuscaRow["cliente"]; p_agente: string }; Returns: undefined };
       current_member_id: { Args: Record<PropertyKey, never>; Returns: string | null };
       is_member: { Args: Record<PropertyKey, never>; Returns: boolean };
       is_admin: { Args: Record<PropertyKey, never>; Returns: boolean };
