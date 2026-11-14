@@ -1,20 +1,24 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
+import GoogleConta from "@/components/admin/GoogleConta";
 import TabelaMembros from "@/components/admin/TabelaMembros";
 import { obterMembroAtual } from "@/lib/membro";
 import { supabaseServidor } from "@/lib/supabase/server";
 
 export const metadata: Metadata = { title: "Membros" };
 
-export default async function PaginaAdmin() {
+export default async function PaginaAdmin({ searchParams }: { searchParams: Promise<{ google?: string }> }) {
   const { membro } = await obterMembroAtual();
   if (!membro?.is_admin) redirect("/agenda");
 
   const supabase = await supabaseServidor();
-  const [{ data: membros }, { data: pedidos }] = await Promise.all([
+  const [{ data: membros }, { data: pedidos }, { data: google }, q] = await Promise.all([
     supabase.from("members").select("*").order("name"),
     supabase.from("access_requests").select("*").order("created_at"),
+    supabase.rpc("google_status"),
+    searchParams,
   ]);
+  const retorno = typeof q.google === "string" ? q.google : null;
 
   return (
     <div className="wrap-estreito flex flex-col gap-6">
@@ -26,6 +30,7 @@ export default async function PaginaAdmin() {
           Quem entra com o Google sem estar cadastrado pode pedir acesso; os pedidos aparecem aqui.
         </p>
       </div>
+      <GoogleConta status={google ?? null} retorno={retorno} />
       <TabelaMembros inicial={membros ?? []} pedidosIniciais={pedidos ?? []} meuId={membro.id} />
     </div>
   );

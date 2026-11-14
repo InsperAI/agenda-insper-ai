@@ -1,5 +1,5 @@
 /**
- * Tipos do banco, escritos à mão para espelhar supabase/migrations/ (0001–0013).
+ * Tipos do banco, escritos à mão para espelhar supabase/migrations/ (0001–0014).
  * Se o esquema mudar, mude a migração primeiro e depois este arquivo.
  */
 
@@ -46,6 +46,37 @@ export type FeedBuscaRow = {
   primeira_em: string;
   ultima_em: string;
   buscas: number;
+};
+
+/** Conta Google da Insper AI que organiza os eventos (0014). Só a service role lê. */
+export type GoogleContaRow = {
+  id: boolean;
+  email: string;
+  refresh_token: string;
+  calendario_id: string | null;
+  site_url: string;
+  segredo: string;
+  conectada_por: string | null;
+  conectada_em: string;
+  erro: string | null;
+  erro_em: string | null;
+  sincronizada_em: string | null;
+};
+/** Quem recebe os eventos no Google Agenda, e em qual e-mail (0014). */
+export type GoogleInscricaoRow = { member_id: string; email: string; criada_em: string };
+export type GoogleFilaRow = { serie_id: string; pedido_em: string; proxima_em: string; travada_ate: string | null; tentativas: number; erro: string | null };
+export type GoogleEspelhoRow = { evento_id: string; serie_id: string; assinatura: string; atualizado_em: string };
+/** google_status(): todo membro vê `conectada`; o admin vê o resto. */
+export type GoogleStatus = {
+  conectada: boolean;
+  email?: string | null;
+  conectada_em?: string | null;
+  sincronizada_em?: string | null;
+  erro?: string | null;
+  erro_em?: string | null;
+  pendentes?: number;
+  com_erro?: number;
+  inscritos?: number;
 };
 
 export type EventoRow = {
@@ -177,6 +208,26 @@ export type Database = {
         Update: never;
         Relationships: [];
       };
+      google_conta: {
+        Row: GoogleContaRow;
+        Insert: Omit<GoogleContaRow, "id" | "segredo" | "conectada_em" | "erro" | "erro_em" | "sincronizada_em" | "calendario_id"> &
+          Partial<Pick<GoogleContaRow, "id" | "calendario_id" | "erro" | "erro_em" | "conectada_em">>;
+        Update: Partial<GoogleContaRow>;
+        Relationships: [];
+      };
+      google_inscricoes: {
+        Row: GoogleInscricaoRow;
+        Insert: { member_id?: string; email: string };
+        Update: { email?: string };
+        Relationships: [];
+      };
+      google_fila: { Row: GoogleFilaRow; Insert: never; Update: never; Relationships: [] };
+      google_espelho: {
+        Row: GoogleEspelhoRow;
+        Insert: Omit<GoogleEspelhoRow, "atualizado_em"> & { atualizado_em?: string };
+        Update: Partial<GoogleEspelhoRow>;
+        Relationships: [];
+      };
       events: {
         Row: EventoRow;
         Insert: EventoInsert;
@@ -267,6 +318,12 @@ export type Database = {
       org_definir_horario: { Args: { p_grupo: string; p_horario: string | null }; Returns: undefined };
       org_estender_prazo: { Args: { p_ag: string; p_prazo: string }; Returns: undefined };
       confirmar_agendamento: { Args: { p_ag: string }; Returns: number };
+      google_status: { Args: Record<PropertyKey, never>; Returns: GoogleStatus | null };
+      google_series_enviadas: { Args: Record<PropertyKey, never>; Returns: string[] };
+      google_enfileirar_tudo: { Args: Record<PropertyKey, never>; Returns: number };
+      google_pegar_fila: { Args: { p_limite?: number }; Returns: { serie_id: string; pedido_em: string; tentativas: number }[] };
+      google_concluir: { Args: { p_serie: string; p_pedido_em: string }; Returns: undefined };
+      google_falhou: { Args: { p_serie: string; p_erro: string }; Returns: undefined };
     };
     Enums: { categoria: Categoria; frequencia: Frequencia; nivel: Nivel; modo_votacao: ModoVotacao };
     CompositeTypes: { [_ in never]: never };

@@ -49,7 +49,7 @@ const fmtData = (d: Date) => format(sp(d), "yyyyMMdd");
 const fmtUtc = (d: Date) =>
   `${d.getUTCFullYear()}${dois(d.getUTCMonth() + 1)}${dois(d.getUTCDate())}T${dois(d.getUTCHours())}${dois(d.getUTCMinutes())}${dois(d.getUTCSeconds())}Z`;
 
-function propData(nome: string, d: Date, diaInteiro: boolean): string {
+export function propData(nome: string, d: Date, diaInteiro: boolean): string {
   return diaInteiro ? `${nome};VALUE=DATE:${fmtData(d)}` : `${nome};TZID=${FUSO}:${fmtLocal(d)}`;
 }
 
@@ -66,7 +66,7 @@ const VTIMEZONE = [
   "END:VTIMEZONE",
 ];
 
-function rrule(m: EventoRow): string | null {
+export function rrule(m: EventoRow): string | null {
   if (!m.freq || !m.until) return null;
   const limite = endOfDay(deChaveDia(m.until));
   // UNTIL tem de ter o mesmo tipo de valor de DTSTART: DATE para dia inteiro, UTC caso contrário.

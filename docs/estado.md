@@ -1,6 +1,6 @@
 # Estado do projeto
 
-_Atualizado em 13/11/2026. Atualize este arquivo quando algo daqui mudar._
+_Atualizado em 14/11/2026. Atualize este arquivo quando algo daqui mudar._
 
 ## No ar
 
@@ -35,7 +35,31 @@ Todas de `0001` a `0013` (rodadas à mão no SQL Editor, em ordem):
 | 0010 | Diretoria também confirma/reabre qualquer pedido; evento fica no nome de quem pediu |
 | 0011 | Quem entra num nível (cadastro ou mudança) vira convidado dos pedidos abertos para esse nível |
 | 0012 | **Horários por grupo** (agendamentos): grupos estilo Classroom, um horário por grupo; corrige `pode_decidir_votacao` para pedido sem dono |
+| 0014 | **Google Agenda na hora** — `google_conta`, `google_inscricoes`, `google_fila`, `google_espelho`, triggers que enfileiram e chamam `/api/google/sincronizar` pelo pg_net. **Ainda não aplicada** (branch `feat/google-agenda-na-hora`). O código funciona sem ela (os blocos do Google não aparecem). |
 | 0013 | `feed_buscas`: o feed anota, por pessoa e por app (Google/Apple/Outlook), a primeira e a última busca e quantas foram; a página Conectar mostra "buscou há 9 h · em média a cada 13 h". O código funciona sem ela (o bloco só não aparece). |
+
+## Google Agenda "na hora" (0014)
+
+O link .ics é **puxado** (Google: 12–24 h). Para o Google, agora a agenda **empurra**, como o SIGE fazia: uma conta Google da Insper AI (conectada por um admin em **Membros**) é a organizadora; cada evento vira um evento na agenda "Insper AI · Agenda" dessa conta, com quem pode vê-lo e ativou em **Conectar** como convidado. Aparece na agenda da pessoa segundos depois de salvo.
+
+- **Fluxo:** qualquer insert/update/delete em `events` (ou mudança em `google_inscricoes` / nível de quem recebe) → trigger enfileira a série em `google_fila` → uma vez por comando o pg_net chama `POST /api/google/sincronizar` (header `x-agenda-segredo` = `google_conta.segredo`) → a rota responde 202 e, em `after()`, `lib/google/sincronizar.ts` esvazia a fila. O cron diário (`/api/ping`) varre o que sobrar.
+- **Mapeamento** (`lib/googleEvento.ts`): mestre → 1 evento (id = uuid sem hífens) com RRULE + EXDATE por filha; filha editada → evento avulso; cancelada → só o EXDATE. `google_espelho` guarda o hash do que foi enviado: só vai ao Google o que mudou; o que sumiu é apagado.
+- **Melhor que o SIGE:** escopo mínimo (`calendar.app.created`: só a agenda que o app criou), cada pessoa escolhe ativar e qual e-mail Google usar, ninguém vê a lista de convidados, mantém a resposta Sim/Não de quem respondeu, fila com nova tentativa (1 min → 6 h), e o feed .ics deixa de repetir para o Google quem ativou (Apple/Outlook seguem recebendo tudo).
+- **Ninguém recebe e-mail** (`sendUpdates=none`). Se a pessoa tiver "Adicionar convites à minha agenda" = "só de remetentes conhecidos", o evento pode não aparecer: a tela Conectar explica onde mudar.
+- **Diagnóstico:** Membros mostra conta, inscritos, fila e último erro, com "Sincronizar agora". No SQL Editor: `select serie_id, tentativas, erro, proxima_em from google_fila order by proxima_em;` e `select * from net._http_response order by created desc limit 20;` (respostas do pg_net).
+- **Limites:** só séries que não acabaram há mais de 30 dias e começam nos próximos 18 meses (o que já foi enviado continua sendo atualizado mesmo saindo da janela). Desconectar ou trocar de conta apaga a agenda "Insper AI · Agenda" da conta antiga (os convites somem de todos) antes de revogar o acesso.
+- **Sem laço:** se o token ou a agenda falham, a rota não se chama de novo; só encadeia outra rodada quando a anterior andou. Série com erro espera 1, 2, 4… min (até 6 h).
+- **Em aberto (decisão do dono):** o e-mail que cada um digita em Conectar não é verificado — alguém pode mandar para outro endereço o que **ele mesmo** já vê (não amplia o acesso). O segredo do pg_net fica nos headers de `net.http_request_queue`; só dispara sincronizações, sem dano além disso.
+
+### Para ligar (uma vez)
+
+1. Google Cloud → projeto "Agenda Insper AI" → **APIs e serviços → Biblioteca → Google Calendar API → Ativar**.
+2. Google Auth Platform → **Acesso a dados → Adicionar escopo** `…/auth/calendar.app.created` (o Google pode pedir verificação; enquanto não verifica, quem conecta vê "app não verificado" → Avançado → continuar. Só o admin passa por essa tela).
+3. Mesmo lugar → **Clientes → "Agenda Supabase"** → URIs de redirecionamento: adicionar `https://agenda-insper-ai.vercel.app/api/google/retorno` (e `http://localhost:3002/api/google/retorno` para testar local). Copiar o ID e a chave secreta do cliente (criar uma chave nova, se a antiga não aparecer).
+4. Vercel → Settings → Environment Variables: `GOOGLE_CLIENT_ID` e `GOOGLE_CLIENT_SECRET` → Redeploy.
+5. Supabase → SQL Editor → rodar `0014_google_agenda.sql` (ativa o pg_net).
+6. No app, logado como admin: **Membros → Conectar conta Google** com a conta organizadora (de preferência uma @insperai.com.br só para isso; `agendainsperai@gmail.com` também serve).
+7. Cada pessoa: **Conectar → Google Agenda · na hora → Ativar**.
 
 ## Sincronização do calendário (feed .ics)
 

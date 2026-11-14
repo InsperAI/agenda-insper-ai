@@ -32,13 +32,28 @@ export async function GET(request: Request, { params }: { params: Promise<{ toke
   });
   if (error) return new NextResponse("Erro ao gerar o calendário.", { status: 500 });
 
-  const corpo = serializarCalendario(visiveisPara(linhas ?? [], membro), "Insper AI · Agenda", agora);
+  const agente = request.headers.get("user-agent") ?? "";
+  const cliente = identificarCliente(agente);
+  let visiveis = visiveisPara(linhas ?? [], membro);
+
+  // Quem recebe na hora no Google Agenda (0014) veria tudo duas vezes se também
+  // assinou este link no Google: para o Google, o feed tira o que já foi enviado.
+  // Apple e Outlook continuam recebendo tudo pelo link.
+  if (cliente === "google") {
+    const { data: inscricao } = await admin.from("google_inscricoes").select("member_id").eq("member_id", membro.id).maybeSingle();
+    if (inscricao) {
+      const { data: enviados } = await admin.rpc("google_series_enviadas");
+      const series = new Set(enviados ?? []);
+      visiveis = visiveis.filter((l) => !series.has(l.series_id ?? l.id));
+    }
+  }
+
+  const corpo = serializarCalendario(visiveis, "Insper AI · Agenda", agora);
 
   // Depois de responder: anota que este app buscou (página Conectar mostra). Falhar aqui não afeta o feed.
-  const agente = request.headers.get("user-agent") ?? "";
   after(async () => {
     try {
-      const { error: erroBusca } = await admin.rpc("registrar_busca_feed", { p_member: membro.id, p_cliente: identificarCliente(agente), p_agente: agente });
+      const { error: erroBusca } = await admin.rpc("registrar_busca_feed", { p_member: membro.id, p_cliente: cliente, p_agente: agente });
       if (erroBusca) console.error("[feed] não registrou a busca:", erroBusca.message);
     } catch (e) {
       console.error("[feed] não registrou a busca:", e instanceof Error ? e.message : e);
