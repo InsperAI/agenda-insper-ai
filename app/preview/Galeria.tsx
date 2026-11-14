@@ -20,6 +20,8 @@ import GaleriaAgendamento from "./GaleriaAgendamento";
 import GaleriaVotacao from "./GaleriaVotacao";
 import Assinatura from "@/components/agenda/Assinatura";
 import BuscasFeed from "@/components/agenda/BuscasFeed";
+import GoogleNaHora from "@/components/agenda/GoogleNaHora";
+import GoogleConta from "@/components/admin/GoogleConta";
 
 const MEMBROS: MembroRow[] = [
   { id: "m1", email: "gui@insper.ai", name: "Guilherme Leal", cargo: "Presidente", nivel: "diretoria", is_admin: true, created_at: "2026-08-01T12:00:00Z" },
@@ -205,6 +207,8 @@ export default function Galeria() {
         <GaleriaAgendamento />
         <section id="conectar" className="wrap-estreito flex flex-col gap-4 px-0">
           <h2 className="t-h3">Conectar</h2>
+          <GoogleNaHora membroId="exemplo" emailLogin="voce@al.insper.edu.br" inscricao={null} />
+          <GoogleNaHora membroId="exemplo" emailLogin="voce@gmail.com" inscricao={{ email: "voce@gmail.com" }} />
           <BuscasFeed
             agora={new Date("2026-11-13T15:00:00Z")}
             buscas={[
@@ -213,7 +217,17 @@ export default function Galeria() {
               { cliente: "navegador", primeira_em: "2026-11-12T15:00:00Z", ultima_em: "2026-11-13T14:59:00Z", buscas: 2 },
             ]}
           />
-          <Assinatura token={"0".repeat(48)} />
+          <Assinatura token={"0".repeat(48)} googleNaHora />
+          <h2 className="t-h3">Membros · Google</h2>
+          <GoogleConta status={{ conectada: false }} retorno={null} />
+          <GoogleConta
+            status={{ conectada: true, email: "agenda@insperai.com.br", sincronizada_em: "2026-11-14T20:10:00Z", pendentes: 2, com_erro: 0, inscritos: 23, erro: null }}
+            retorno={null}
+          />
+          <GoogleConta
+            status={{ conectada: true, email: "agenda@insperai.com.br", sincronizada_em: "2026-11-13T09:00:00Z", pendentes: 40, com_erro: 40, inscritos: 23, erro: "O Google revogou o acesso da agenda. Conecte a conta de novo." }}
+            retorno={null}
+          />
         </section>
 
         <section className="flex gap-2">

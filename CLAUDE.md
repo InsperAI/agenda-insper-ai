@@ -12,7 +12,7 @@ npm run dev -- -p 3002   # a 3001 costuma estar ocupada por um container Docker 
 npm test                 # Vitest (tests/*.test.ts), lógica pura
 npm run typecheck && npm run lint
 npm run build            # rode antes de cada push; também regenera .next/types
-sh supabase/testes/rodar.sh  # migrações + cenário num Postgres descartável (Docker); rode antes de entregar uma migração
+sh supabase/testes/rodar.sh  # migrações + cenários num Postgres descartável (Docker); rode antes de entregar uma migração
 ```
 
 Depois de **renomear uma rota**, o typecheck acusa `.next/types/validator.ts` apontando para a pasta antiga: é cache. `npm run build` resolve.
@@ -44,6 +44,7 @@ Depois de **renomear uma rota**, o typecheck acusa `.next/types/validator.ts` ap
 | Disponibilidade (when2meet) | `lib/votacao.ts`, `lib/pedidos.ts`, `lib/itensPedidos.ts`, `components/votacao/`, `app/(app)/disponibilidade/`, 0004–0006, 0009–0011 |
 | Horários por grupo (Classroom) | `lib/agendamento.ts`, `components/agendamento/`, `app/(app)/disponibilidade/g/`, 0012 |
 | Feed .ics (Conectar) e quem busca | `lib/ics.ts`, `lib/feed.ts`, `app/api/feed/[token]/`, `components/agenda/Assinatura.tsx`, `BuscasFeed.tsx`, 0013; diagnóstico em `docs/estado.md` |
+| Google Agenda "na hora" (push pela API, fila + pg_net) | `lib/googleEvento.ts` (puro), `lib/google/`, `app/api/google/`, `components/agenda/GoogleNaHora.tsx`, `components/admin/GoogleConta.tsx`, 0014; diagnóstico em `docs/estado.md` |
 | Link curto + prévia WhatsApp | `app/d/[codigo]/`, `lib/og.tsx`, `lib/resumoVotacao.ts`, 0006 |
 | Membros, pedidos de acesso | `components/admin/`, `app/sem-acesso/`, 0003 |
 | Login (Google + código no e-mail) | `app/entrar/`, `lib/login.ts`, `proxy.ts`, `app/auth/` |

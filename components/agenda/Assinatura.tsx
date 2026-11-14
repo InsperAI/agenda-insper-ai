@@ -6,7 +6,7 @@ import Botao, { BotaoLink } from "@/components/ui/Botao";
 import { IcoChecar, IcoCopiar, IcoExterno, IcoRepetir } from "@/components/ui/Icones";
 import { supabaseNavegador } from "@/lib/supabase/client";
 
-export default function Assinatura({ token: tokenInicial }: { token: string | null }) {
+export default function Assinatura({ token: tokenInicial, googleNaHora = false }: { token: string | null; googleNaHora?: boolean }) {
   const sb = useMemo(() => supabaseNavegador(), []);
   const [token, setToken] = useState(tokenInicial);
   const [origem, setOrigem] = useState<string>(process.env.NEXT_PUBLIC_SITE_URL ?? "");
@@ -75,8 +75,8 @@ export default function Assinatura({ token: tokenInicial }: { token: string | nu
           </BotaoLink>
         </Passo>
         <Passo
-          titulo="Google Agenda"
-          texto="Faça pelo computador: o app do Google no celular não adiciona agenda por link (depois de adicionada, ela aparece no celular sozinha). Se você tem mais de uma conta Google, confira no canto de cima qual abriu; se for a errada, troque de conta ou use Outras agendas → + → Do URL e cole o link."
+          titulo={googleNaHora ? "Google Agenda · pelo link" : "Google Agenda"}
+          texto={googleNaHora ? "Prefira o “Google Agenda · na hora” acima: pelo link, o Google demora de 12 a 24 horas para buscar mudanças. Se mesmo assim quiser o link: faça pelo computador (Outras agendas → + → Do URL)." : "Faça pelo computador: o app do Google no celular não adiciona agenda por link (depois de adicionada, ela aparece no celular sozinha). Se você tem mais de uma conta Google, confira no canto de cima qual abriu; se for a errada, troque de conta ou use Outras agendas → + → Do URL e cole o link."}
         >
           <BotaoLink href={google} target="_blank" rel="noreferrer" variante="secundario" tamanho="sm">
             Abrir no Google Agenda <IcoExterno />
@@ -90,8 +90,7 @@ export default function Assinatura({ token: tokenInicial }: { token: string | nu
         <ul className="mt-2 flex list-disc flex-col gap-1.5 pl-5 text-[0.8125rem] text-ia-apoio marker:text-ia-meta">
           <li>
             <strong className="font-medium text-ia-corpo">Google Agenda</strong> busca agendas por link no tempo dele, em geral a cada 12 a 24 horas, e não tem botão de
-            atualizar. Remover e adicionar de novo força uma busca na hora (mas a cor e os avisos voltam ao padrão). Se você precisa ver mudanças rápido, use o Calendário da
-            Apple ou abra esta agenda no site.
+            atualizar. {googleNaHora ? "Para mudanças na hora, ative o “Google Agenda · na hora” lá em cima." : "Remover e adicionar de novo força uma busca na hora (mas a cor e os avisos voltam ao padrão). Se você precisa ver mudanças rápido, use o Calendário da Apple ou abra esta agenda no site."}
           </li>
           <li>
             <strong className="font-medium text-ia-corpo">Calendário da Apple</strong> segue o “Obter Dados” que você escolheu (veja acima). Para puxar na hora: abra o
