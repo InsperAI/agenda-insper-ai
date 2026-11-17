@@ -19,7 +19,7 @@ _Atualizado em 14/11/2026. Atualize este arquivo quando algo daqui mudar._
 
 ## Migrações aplicadas em produção
 
-Todas de `0001` a `0013` (rodadas à mão no SQL Editor, em ordem):
+Todas de `0001` a `0015` (rodadas à mão no SQL Editor, em ordem):
 
 | # | O quê |
 |---|---|
@@ -35,8 +35,9 @@ Todas de `0001` a `0013` (rodadas à mão no SQL Editor, em ordem):
 | 0010 | Diretoria também confirma/reabre qualquer pedido; evento fica no nome de quem pediu |
 | 0011 | Quem entra num nível (cadastro ou mudança) vira convidado dos pedidos abertos para esse nível |
 | 0012 | **Horários por grupo** (agendamentos): grupos estilo Classroom, um horário por grupo; corrige `pode_decidir_votacao` para pedido sem dono |
-| 0014 | **Google Agenda na hora** — `google_conta`, `google_inscricoes`, `google_fila`, `google_espelho`, triggers que enfileiram e chamam `/api/google/sincronizar` pelo pg_net. **Ainda não aplicada** (branch `feat/google-agenda-na-hora`). O código funciona sem ela (os blocos do Google não aparecem). |
 | 0013 | `feed_buscas`: o feed anota, por pessoa e por app (Google/Apple/Outlook), a primeira e a última busca e quantas foram; a página Conectar mostra "buscou há 9 h · em média a cada 13 h". O código funciona sem ela (o bloco só não aparece). |
+| 0014 | **Google Agenda na hora** — `google_conta`, `google_inscricoes`, `google_fila`, `google_espelho`, triggers que enfileiram e chamam `/api/google/sincronizar` pelo pg_net. Aplicada em 16/11/2026; conta organizadora `agendainsperai@gmail.com`. |
+| 0015 | "Reenviar convites" (aplicada em 16/11/2026): `google_inscricoes.reenviado_em` (trava de 2 min, só o servidor grava); logado só escreve `member_id`/`email` na própria inscrição; gravar a trava não re-enfileira tudo. |
 
 ## Google Agenda "na hora" (0014)
 
@@ -45,7 +46,7 @@ O link .ics é **puxado** (Google: 12–24 h). Para o Google, agora a agenda **e
 - **Fluxo:** qualquer insert/update/delete em `events` (ou mudança em `google_inscricoes` / nível de quem recebe) → trigger enfileira a série em `google_fila` → uma vez por comando o pg_net chama `POST /api/google/sincronizar` (header `x-agenda-segredo` = `google_conta.segredo`) → a rota responde 202 e, em `after()`, `lib/google/sincronizar.ts` esvazia a fila. O cron diário (`/api/ping`) varre o que sobrar.
 - **Mapeamento** (`lib/googleEvento.ts`): mestre → 1 evento (id = uuid sem hífens) com RRULE + EXDATE por filha; filha editada → evento avulso; cancelada → só o EXDATE. `google_espelho` guarda o hash do que foi enviado: só vai ao Google o que mudou; o que sumiu é apagado.
 - **Melhor que o SIGE:** escopo mínimo (`calendar.app.created`: só a agenda que o app criou), cada pessoa escolhe ativar e qual e-mail Google usar, ninguém vê a lista de convidados, mantém a resposta Sim/Não de quem respondeu, fila com nova tentativa (1 min → 6 h), e o feed .ics deixa de repetir para o Google quem ativou (Apple/Outlook seguem recebendo tudo).
-- **Ninguém recebe e-mail** (`sendUpdates=none`). Se a pessoa tiver "Adicionar convites à minha agenda" = "só de remetentes conhecidos", o evento pode não aparecer: a tela Conectar explica onde mudar.
+- **Ninguém recebe e-mail** (`sendUpdates=none`). O convite chega como "Insper AI · Agenda" (o endereço `…@group.calendar.google.com` da agenda, não o Gmail). Se a pessoa tiver "Adicionar convites à minha agenda" ≠ "De todos", o Google não põe o evento na agenda dela, e **mudar depois não adianta**: o Google só olha isso quando a pessoa entra como convidada (testado em 16/11/2026). Por isso Conectar pede "De todos" **antes** de ativar, e quem já ativou tem **Reenviar convites** (`/api/google/reenviar`, `lib/google/reenviar.ts`): tira e põe a pessoa de volta em cada evento, no máximo a cada 2 min contados desde o último reenvio **e** desde que ativou (`reenviado_em`, 0015). Só reenvia evento que a pessoa não respondeu (quem respondeu Sim/Não recebeu) e que ainda existe; marca o espelho como `reenviando` e enfileira as séries antes de mexer, e no fim pede uma rodada da sincronização, então ninguém fica de fora se algo parar no meio. Não testado: se pôr o Gmail da conta nos contatos basta no lugar de "De todos".
 - **Diagnóstico:** Membros mostra conta, inscritos, fila e último erro, com "Sincronizar agora". No SQL Editor: `select serie_id, tentativas, erro, proxima_em from google_fila order by proxima_em;` e `select * from net._http_response order by created desc limit 20;` (respostas do pg_net).
 - **Limites:** só séries que não acabaram há mais de 30 dias e começam nos próximos 18 meses (o que já foi enviado continua sendo atualizado mesmo saindo da janela). Desconectar ou trocar de conta apaga a agenda "Insper AI · Agenda" da conta antiga (os convites somem de todos) antes de revogar o acesso.
 - **Sem laço:** se o token ou a agenda falham, a rota não se chama de novo; só encadeia outra rodada quando a anterior andou. Série com erro espera 1, 2, 4… min (até 6 h).

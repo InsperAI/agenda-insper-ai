@@ -101,5 +101,22 @@ begin
                     from net.chamadas), 'chama /api/google/sincronizar com o segredo');
 end $$;
 
+\echo '── 0015: Reenviar convites ──'
+reset role; delete from google_fila;
+select teste.como('gu@t'); set role authenticated;
+-- O upsert do botão Ativar (PostgREST): insert … on conflict do update set member_id, email.
+insert into google_inscricoes (member_id, email) values (current_member_id(), 'gustavo@gmail.com')
+  on conflict (member_id) do update set member_id = excluded.member_id, email = excluded.email;
+select teste.ok((select email from google_inscricoes) = 'gustavo@gmail.com', 'reativar (upsert) continua funcionando');
+select teste.erro($$update google_inscricoes set reenviado_em = null$$, 'permission denied', 'logado não mexe na trava do reenvio');
+select teste.erro($$update google_inscricoes set criada_em = '2000-01-01'$$, 'permission denied', 'logado não mexe em criada_em');
+select teste.erro($$insert into google_inscricoes (member_id, email, reenviado_em) values (current_member_id(), 'y@gmail.com', '2000-01-01') on conflict do nothing$$, 'permission denied', 'logado não escolhe a trava ao ativar');
+reset role;
+delete from google_fila;
+set role service_role;
+update google_inscricoes set reenviado_em = now() where member_id = teste.v('gu');
+reset role;
+select teste.ok(not exists (select 1 from google_fila), 'gravar a trava do reenvio não re-enfileira tudo');
+
 \echo 'TUDO OK (0014)'
 select teste.ok(true, 'TUDO OK (0014)');

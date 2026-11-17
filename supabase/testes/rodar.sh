@@ -10,7 +10,7 @@ docker run -d --name $C -e POSTGRES_PASSWORD=teste postgres:17-alpine >/dev/null
 trap 'docker rm -f $C >/dev/null 2>&1' EXIT
 for i in $(seq 1 30); do docker exec $C pg_isready -U postgres -q && break; sleep 1; done; sleep 2
 docker exec -i $C psql -U postgres -q -v ON_ERROR_STOP=1 < "$D/00_supabase_stub.sql" >/dev/null 2>&1
-for f in "$M"/*.sql "$M"/0011_*.sql "$M"/0012_*.sql "$M"/0013_*.sql "$M"/0014_*.sql; do
+for f in "$M"/*.sql "$M"/0011_*.sql "$M"/0012_*.sql "$M"/0013_*.sql "$M"/0014_*.sql "$M"/0015_*.sql; do
   docker exec -i $C psql -U postgres -q -v ON_ERROR_STOP=1 < "$f" >/dev/null 2>/tmp/agenda-teste-err.txt || { echo "MIGRAÇÃO FALHOU: $f"; cat /tmp/agenda-teste-err.txt; exit 1; }
 done
 echo "migrações ok"

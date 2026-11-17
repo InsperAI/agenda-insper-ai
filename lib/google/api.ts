@@ -10,6 +10,8 @@ import type { CorpoGoogle } from "../googleEvento";
 export const ESCOPOS = ["openid", "email", "https://www.googleapis.com/auth/calendar.app.created"];
 const ESCOPO_AGENDA = ESCOPOS[2];
 const API = "https://www.googleapis.com/calendar/v3";
+/** Nenhuma chamada ao Google pode segurar a função (60 s na Vercel) esperando para sempre. */
+const TEMPO_LIMITE_MS = 8_000;
 
 export type CodigoErro = "falhou" | "config" | "revogado" | "sem_refresh" | "escopo" | "email";
 
@@ -55,6 +57,7 @@ async function token(corpo: Record<string, string>) {
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body: new URLSearchParams({ client_id: id, client_secret: segredo, ...corpo }),
     cache: "no-store",
+    signal: AbortSignal.timeout(TEMPO_LIMITE_MS),
   });
   const dados = (await r.json().catch(() => ({}))) as Record<string, string>;
   if (!r.ok) {
@@ -105,6 +108,7 @@ async function chamar<T>(acesso: string, metodo: string, caminho: string, corpo?
     headers: { Authorization: `Bearer ${acesso}`, ...(corpo ? { "Content-Type": "application/json" } : {}) },
     body: corpo ? JSON.stringify(corpo) : undefined,
     cache: "no-store",
+    signal: AbortSignal.timeout(TEMPO_LIMITE_MS),
   });
   const texto = await r.text();
   const dados = texto ? (JSON.parse(texto) as T & { error?: { message?: string } }) : null;
@@ -128,7 +132,19 @@ export async function criarAgenda(acesso: string): Promise<string> {
   return r.dados.id;
 }
 
-type EventoExistente = { attendees?: { email: string; responseStatus?: string }[] };
+type EventoExistente = { status?: string; attendees?: { email: string; responseStatus?: string }[] };
+type Respostas = Map<string, string | undefined>;
+
+const respostasDe = (e: EventoExistente | null): Respostas => new Map((e?.attendees ?? []).map((a) => [a.email.toLowerCase(), a.responseStatus]));
+
+/** Mantém o Sim/Não/Talvez de quem já respondeu (o corpo planejado não sabe das respostas). */
+function comRespostas(corpo: CorpoGoogle, respostas: Respostas): CorpoGoogle {
+  const attendees = corpo.attendees.map((a) => {
+    const r = respostas.get(a.email);
+    return r && r !== "needsAction" ? { ...a, responseStatus: r } : a;
+  });
+  return { ...corpo, attendees };
+}
 
 /**
  * Cria ou atualiza pelo id próprio. Mantém a resposta (Sim/Não/Talvez) de quem
@@ -149,12 +165,20 @@ export async function gravarEvento(acesso: string, calendarioId: string, corpo: 
     await chamar(acesso, "PUT", `${base}/${corpo.id}?sendUpdates=none`, corpo);
     return;
   }
-  const respostas = new Map((atual.dados?.attendees ?? []).map((a) => [a.email.toLowerCase(), a.responseStatus]));
-  const attendees = corpo.attendees.map((a) => {
-    const r = respostas.get(a.email);
-    return r && r !== "needsAction" ? { ...a, responseStatus: r } : a;
-  });
-  await chamar(acesso, "PUT", `${base}/${corpo.id}?sendUpdates=none`, { ...corpo, attendees });
+  await chamar(acesso, "PUT", `${base}/${corpo.id}?sendUpdates=none`, comRespostas(corpo, respostasDe(atual.dados)));
+}
+
+export type ConviteAtual = { existe: boolean; respostas: Respostas };
+
+/** Como o evento está no Google agora: apagado/cancelado conta como inexistente. */
+export async function lerConvite(acesso: string, calendarioId: string, idEvento: string): Promise<ConviteAtual> {
+  const r = await chamar<EventoExistente>(acesso, "GET", `/calendars/${encodeURIComponent(calendarioId)}/events/${idEvento}`);
+  return { existe: r.status === 200 && r.dados?.status !== "cancelled", respostas: respostasDe(r.dados) };
+}
+
+/** Regrava um evento que já existe, com as respostas lidas antes (sem um GET a mais). */
+export async function regravarEvento(acesso: string, calendarioId: string, corpo: CorpoGoogle, respostas: Respostas): Promise<void> {
+  await chamar(acesso, "PUT", `/calendars/${encodeURIComponent(calendarioId)}/events/${corpo.id}?sendUpdates=none`, comRespostas(corpo, respostas));
 }
 
 export async function apagarEvento(acesso: string, calendarioId: string, idGoogle: string): Promise<void> {

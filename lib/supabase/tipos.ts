@@ -63,7 +63,8 @@ export type GoogleContaRow = {
   sincronizada_em: string | null;
 };
 /** Quem recebe os eventos no Google Agenda, e em qual e-mail (0014). */
-export type GoogleInscricaoRow = { member_id: string; email: string; criada_em: string };
+/** reenviado_em (0015): trava de 2 min do "Reenviar convites"; só o servidor grava. */
+export type GoogleInscricaoRow = { member_id: string; email: string; criada_em: string; reenviado_em: string | null };
 export type GoogleFilaRow = { serie_id: string; pedido_em: string; proxima_em: string; travada_ate: string | null; tentativas: number; erro: string | null };
 export type GoogleEspelhoRow = { evento_id: string; serie_id: string; assinatura: string; atualizado_em: string };
 /** google_status(): todo membro vê `conectada`; o admin vê o resto. */
@@ -218,7 +219,7 @@ export type Database = {
       google_inscricoes: {
         Row: GoogleInscricaoRow;
         Insert: { member_id?: string; email: string };
-        Update: { email?: string };
+        Update: { email?: string; reenviado_em?: string | null };
         Relationships: [];
       };
       google_fila: { Row: GoogleFilaRow; Insert: never; Update: never; Relationships: [] };
@@ -324,6 +325,7 @@ export type Database = {
       google_pegar_fila: { Args: { p_limite?: number }; Returns: { serie_id: string; pedido_em: string; tentativas: number }[] };
       google_concluir: { Args: { p_serie: string; p_pedido_em: string }; Returns: undefined };
       google_falhou: { Args: { p_serie: string; p_erro: string }; Returns: undefined };
+      google_enfileirar: { Args: { p_serie: string }; Returns: undefined };
     };
     Enums: { categoria: Categoria; frequencia: Frequencia; nivel: Nivel; modo_votacao: ModoVotacao };
     CompositeTypes: { [_ in never]: never };

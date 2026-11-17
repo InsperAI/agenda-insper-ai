@@ -82,7 +82,7 @@ async function garantirAgenda(admin: Admin, acesso: string, atual: string | null
   return nova;
 }
 
-async function lerAssinantes(admin: Admin): Promise<Assinante[]> {
+export async function lerAssinantes(admin: Admin): Promise<Assinante[]> {
   const { data: inscricoes, error } = await admin.from("google_inscricoes").select("member_id,email");
   if (error) throw new Error(`google_inscricoes: ${error.message}`);
   if (!inscricoes?.length) return [];
@@ -129,5 +129,11 @@ export async function pedirOutraRodada(): Promise<void> {
   const admin = supabaseAdmin();
   const { data: conta } = await admin.from("google_conta").select("site_url,segredo").maybeSingle();
   if (!conta) return;
-  await fetch(`${conta.site_url}/api/google/sincronizar`, { method: "POST", headers: { "x-agenda-segredo": conta.segredo }, cache: "no-store" }).catch(() => undefined);
+  await fetch(`${conta.site_url}/api/google/sincronizar`, {
+    method: "POST",
+    headers: { "x-agenda-segredo": conta.segredo },
+    cache: "no-store",
+    // A rota responde 202 na hora; não deixar quem chamou preso se ela demorar.
+    signal: AbortSignal.timeout(5_000),
+  }).catch(() => undefined);
 }

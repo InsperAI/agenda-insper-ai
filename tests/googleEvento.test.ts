@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { spDe } from "@/lib/fuso";
-import { convidadosDe, emJanela, idGoogle, planejarSerie, type Assinante } from "@/lib/googleEvento";
+import { convidadosDe, emJanela, idGoogle, planejarReenvio, planejarSerie, type Assinante } from "@/lib/googleEvento";
 import type { EventoRow } from "@/lib/supabase/tipos";
 
 function linha(p: Partial<EventoRow> & Pick<EventoRow, "id" | "start_at" | "end_at">): EventoRow {
@@ -146,5 +146,32 @@ describe("emJanela", () => {
     const unico = linha({ id: "u", start_at: spDe(2026, 10, 20, 10).toISOString(), end_at: spDe(2026, 10, 20, 11).toISOString() });
     expect(emJanela(unico, agora)).toBe(true);
     expect(emJanela({ ...unico, start_at: spDe(2026, 9, 1).toISOString(), end_at: spDe(2026, 9, 1, 1).toISOString() }, agora)).toBe(false);
+  });
+});
+
+describe("planejarReenvio", () => {
+  const soDiretoria = linha({ id: "44444444-4444-4444-4444-444444444444", start_at: spDe(2026, 11, 20, 9).toISOString(), end_at: spDe(2026, 11, 20, 10).toISOString() });
+  const emails = (c: { attendees: { email: string }[] }) => c.attendees.map((a) => a.email);
+
+  it("só os eventos em que a pessoa é convidada: o membro está na série, não no evento só da diretoria", () => {
+    const serie = planejarReenvio([semanal, cancelada, movida], assinantes, "membro@gmail.com", SITE);
+    expect(serie.map((r) => r.com.eventoId).sort()).toEqual([F2, M].sort());
+    expect(planejarReenvio([soDiretoria], assinantes, "membro@gmail.com", SITE)).toEqual([]);
+  });
+
+  it("'sem' tira só a pessoa; 'com' é exatamente o que a sincronização manda (mesma assinatura)", () => {
+    const [r] = planejarReenvio([soDiretoria], assinantes, "DIRETORA@gmail.com ", SITE);
+    expect(emails(r.sem)).toEqual([]);
+    expect(emails(r.com.corpo)).toEqual(["diretora@gmail.com"]);
+    expect(r.com).toEqual(planejarSerie([soDiretoria], assinantes, SITE)[0]);
+
+    const [m] = planejarReenvio([semanal], assinantes, "membro@gmail.com", SITE);
+    expect(emails(m.sem)).toEqual(["diretora@gmail.com"]);
+    expect(emails(m.com.corpo)).toEqual(["diretora@gmail.com", "membro@gmail.com"]);
+    expect(m.sem.id).toBe(m.com.corpo.id);
+  });
+
+  it("quem não está ativado não reenvia nada", () => {
+    expect(planejarReenvio([semanal], assinantes, "ninguem@gmail.com", SITE)).toEqual([]);
   });
 });

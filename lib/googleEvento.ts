@@ -96,6 +96,23 @@ export function planejarSerie(linhas: readonly EventoRow[], assinantes: readonly
   return corpos.map((c) => ({ eventoId: c.extendedProperties.private.agendaEvento, corpo: c, assinatura: assinar(c) }));
 }
 
+export type Reenvio = { sem: CorpoGoogle; com: Plano };
+
+/**
+ * "Reenviar convites": o Google só decide se põe um convite na agenda da pessoa
+ * quando ela ENTRA como convidada. Quem mudou a configuração "Adicionar convites
+ * à minha agenda" depois de ativar precisa sair e entrar de novo. Para cada evento
+ * da série em que `email` é convidado: o corpo sem ela e o plano normal (com ela).
+ */
+export function planejarReenvio(linhas: readonly EventoRow[], assinantes: readonly Assinante[], email: string, site: string): Reenvio[] {
+  const alvo = email.trim().toLowerCase();
+  const outros = assinantes.filter((a) => a.email.trim().toLowerCase() !== alvo);
+  const semEla = new Map(planejarSerie(linhas, outros, site).map((p) => [p.eventoId, p.corpo]));
+  return planejarSerie(linhas, assinantes, site)
+    .filter((p) => p.corpo.attendees.some((a) => a.email === alvo))
+    .map((com) => ({ sem: semEla.get(com.eventoId)!, com }));
+}
+
 /**
  * O que vale mandar: séries que não acabaram há mais de 30 dias e começam nos
  * próximos 18 meses (a mesma janela do feed .ics, mais curta no passado).
